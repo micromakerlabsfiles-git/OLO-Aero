@@ -6,23 +6,7 @@ This directory contains the pre-compiled ESP32-C3 Supermini firmware binaries (`
 
 ## ⚡ Quickstart
 
-### 1. Host the Web Controller
-
-The Web Controller (`index.html`) requires a **secure context** (HTTPS or `localhost`) because it uses the Web Serial API.
-
-**Option A — Local web server (recommended):**
-```bash
-# In the project root:
-python -m http.server 8000
-# Then open http://localhost:8000 in Chrome or Edge
-```
-
-**Option B — GitHub Pages:**
-Push the repository and enable GitHub Pages in repository Settings → Pages → Source: `main` branch, root `/`.
-
----
-
-### 2. Flash the Firmware
+### 1. Flash the Firmware
 
 1. Open the **🔥 Firmware Flasher** tab in the Web Controller.
 2. Click **Install**.
@@ -37,7 +21,7 @@ Push the repository and enable GitHub Pages in repository Settings → Pages →
 
 ---
 
-### 3. Connect the Web Controller
+### 2. Connect the Web Controller
 
 1. Switch to the **🎛 Web Controller** tab.
 2. Click **Connect Device** at the top right → select the COM port → click **Connect**.
@@ -49,7 +33,7 @@ Push the repository and enable GitHub Pages in repository Settings → Pages →
 
 ---
 
-### 4. Running the Radar Demo (Offline Mode)
+### 3. Running the Radar Demo (Offline Mode)
 
 1. In **WiFi & Display Setup**, set **Flight Tracking Mode** to `Offline Mode`.
 2. Navigate to the **📡 Radar Simulator** tab.
