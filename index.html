@@ -1,0 +1,2939 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OLO Aero — Web Control & Flasher Dashboard</title>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Leaflet.js Map CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <style>
+        :root {
+            --bg-color: #050505;
+            /* Pure dark black */
+            --card-bg: rgba(20, 20, 20, 0.75);
+            /* Dark card background */
+            --card-border: rgba(255, 122, 0, 0.15);
+            /* Sleek orange borders */
+            --text-color: #f3f4f6;
+            --text-muted: #9ca3af;
+            --primary: #ff7a00;
+            /* Vibrant Orange */
+            --primary-glow: rgba(255, 122, 0, 0.25);
+            --secondary: #3b82f6;
+            /* Blue for secondary actions */
+            --secondary-glow: rgba(59, 130, 246, 0.25);
+            --accent: #ff7a00;
+            /* Accent is Orange */
+            --danger: #ef4444;
+            --font-main: 'Outfit', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --detail-bg: rgba(0, 0, 0, 0.4);
+            --overlay-bg: rgba(5, 5, 5, 0.95);
+        }
+
+        /* Light Theme Variable Overrides */
+        body.light-theme {
+            --bg-color: #f3f4f6;
+            /* Light gray background */
+            --card-bg: rgba(255, 255, 255, 0.9);
+            /* Pure white cards */
+            --card-border: rgba(255, 122, 0, 0.3);
+            /* Slightly stronger borders */
+            --text-color: #1f2937;
+            /* Dark text */
+            --text-muted: #4b5563;
+            /* Muted gray text */
+            --primary: #ff7a00;
+            --primary-glow: rgba(255, 122, 0, 0.15);
+            --secondary: #2563eb;
+            --secondary-glow: rgba(37, 99, 235, 0.15);
+            --accent: #ff7a00;
+            --detail-bg: rgba(0, 0, 0, 0.03);
+            --overlay-bg: rgba(243, 244, 246, 0.95);
+        }
+
+        body.light-theme h1,
+        body.light-theme h2,
+        body.light-theme h3,
+        body.light-theme h4,
+        body.light-theme h5,
+        body.light-theme h6,
+        body.light-theme .card-title h2 {
+            color: var(--text-color) !important;
+        }
+
+        body.light-theme .tab-btn {
+            background: #ffffff;
+            color: var(--text-muted);
+            border-color: rgba(255, 122, 0, 0.2);
+        }
+
+        body.light-theme .tab-btn:hover {
+            color: var(--primary);
+            background: rgba(255, 122, 0, 0.05);
+            border-color: var(--primary);
+        }
+
+        body.light-theme .tab-btn.active {
+            color: #ffffff;
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        body.light-theme .modal-box {
+            background: #ffffff;
+            border-color: var(--card-border);
+        }
+
+        body.light-theme #map,
+        body.light-theme #smallConfirmMap {
+            background: #f3f4f6;
+        }
+
+        body.light-theme .btn-outline {
+            color: var(--text-color);
+            border-color: rgba(255, 122, 0, 0.4);
+        }
+
+        body.light-theme .btn-outline:hover:not(:disabled) {
+            background: rgba(255, 122, 0, 0.05);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        body.light-theme .modal-form-group input,
+        body.light-theme .modal-form-group select {
+            background: #ffffff;
+            color: #1f2937;
+            border-color: rgba(255, 122, 0, 0.4);
+        }
+
+
+        body.light-theme input,
+        body.light-theme select {
+            background: #ffffff;
+            color: #1f2937;
+            border-color: rgba(255, 122, 0, 0.4);
+        }
+
+        body.light-theme input:focus,
+        body.light-theme select:focus {
+            box-shadow: 0 0 0 2px rgba(255, 122, 0, 0.25);
+            background: #ffffff;
+        }
+
+        body.light-theme header {
+            background: rgba(255, 255, 255, 0.85);
+        }
+
+        body.light-theme #console,
+        body.light-theme #simConsole {
+            background: #ffffff;
+            border-color: rgba(255, 122, 0, 0.4);
+            color: #1f2937;
+        }
+
+        body.light-theme .console-line {
+            border-bottom-color: rgba(0, 0, 0, 0.05);
+        }
+
+        body.light-theme .console-msg.info {
+            color: #4b5563;
+        }
+
+        body.light-theme .console-time {
+            color: #ff7a00;
+        }
+
+        body.light-theme .console-msg.rx {
+            color: #16a34a;
+        }
+
+        body.light-theme .console-msg.tx {
+            color: #2563eb;
+        }
+
+        /* Slide switch toggle styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 38px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .3s;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+        }
+
+        body.light-theme .slider {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 12px;
+            width: 12px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--text-muted);
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(18px);
+            background-color: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(at 10% 10%, rgba(255, 122, 0, 0.05) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, rgba(255, 122, 0, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 2rem;
+            background: rgba(5, 5, 5, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--card-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            font-size: 1.75rem;
+            color: var(--primary);
+            filter: drop-shadow(0 0 8px var(--primary-glow));
+        }
+
+        header h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        /* Tabs Selection */
+        .tabs-nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin: 1.5rem auto 0.5rem auto;
+            max-width: 1200px;
+            width: 100%;
+            padding: 0 1.5rem;
+        }
+
+        .tab-btn {
+            background: rgba(20, 20, 20, 0.4);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-family: var(--font-main);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            color: #ffffff;
+            background: rgba(30, 30, 30, 0.8);
+            border-color: rgba(255, 122, 0, 0.3);
+        }
+
+        .tab-btn.active {
+            color: #ffffff;
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+            gap: 1.5rem;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 1rem 1.5rem 2rem 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            min-width: 0;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+            color: var(--primary);
+        }
+
+        .card-title h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input,
+        select {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.625rem 0.875rem;
+            color: #ffffff;
+            font-family: var(--font-main);
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-glow);
+        }
+
+        input:disabled,
+        select:disabled,
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.625rem 1.25rem;
+            font-family: var(--font-main);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #d46500;
+            /* Darker orange */
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: #ffffff;
+        }
+
+        .btn-outline:hover:not(:disabled) {
+            background: rgba(255, 122, 0, 0.05);
+            border-color: var(--primary);
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #2563eb;
+            box-shadow: 0 0 10px var(--secondary-glow);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #dc2626;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+            box-shadow: 0 0 8px var(--danger);
+        }
+
+        .status-dot.connected {
+            background: var(--primary);
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        /* Map styling */
+        #map {
+            height: 480px;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            background: #050505;
+            width: 100%;
+        }
+
+        /* Console logger */
+        #console,
+        #simConsole {
+            height: 180px;
+            background: #000000;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            word-break: break-all;
+        }
+
+        .console-line {
+            display: flex;
+            gap: 0.5rem;
+            line-height: 1.4;
+            min-width: 0;
+        }
+
+        .console-time {
+            color: #4b5563;
+            flex-shrink: 0;
+        }
+
+        .console-msg {
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+
+        .console-msg.info {
+            color: #9ca3af;
+        }
+
+        .console-msg.tx {
+            color: #ff9d42;
+        }
+
+        /* Outbound orange tint */
+        .console-msg.rx {
+            color: #34d399;
+        }
+
+        /* Inbound green */
+        .console-msg.error {
+            color: #f87171;
+        }
+
+        /* Red for error */
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        /* Modal Box */
+        .modal-box {
+            background: #0d0d0d;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            padding: 1.75rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.8), 0 10px 10px -5px rgba(0, 0, 0, 0.6);
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1.25rem;
+            line-height: 1.4;
+        }
+
+        .modal-form-group {
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+
+        .modal-form-group label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .modal-form-group input,
+        .modal-form-group select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0.625rem 0.875rem;
+            color: #ffffff;
+            font-family: var(--font-main);
+            outline: none;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        /* Custom styling for standard esp-web-install-button */
+        esp-web-install-button {
+            --esp-tools-button-color: var(--primary);
+            --esp-tools-button-text-color: #ffffff;
+            --esp-tools-button-border-radius: 8px;
+            --esp-tools-button-padding: 0.625rem 1.5rem;
+            --esp-tools-button-font-family: var(--font-main);
+            --esp-tools-button-font-weight: 600;
+        }
+
+        /* Warning banner */
+        .warning-banner {
+            background: #7f1d1d;
+            border: 1px solid #b91c1c;
+            color: #fca5a5;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            margin: 1rem auto 0 auto;
+            max-width: 1200px;
+            width: 100%;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            display: none;
+            /* Shown dynamically via JS */
+        }
+
+        /* Password gate overlay (Dark theme default) */
+        #loginGate {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 5, 5, 0.95);
+            backdrop-filter: blur(12px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        #loginGate .login-box {
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            min-width: 320px;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        #loginGate h2 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        #loginGate p {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        #loginGate input {
+            width: 100%;
+            margin-bottom: 1rem;
+            background: rgba(0, 0, 0, 0.6);
+            color: #ffffff;
+            border-color: rgba(255, 122, 0, 0.2);
+        }
+
+        #loginGate .err {
+            color: var(--danger);
+            font-size: 0.8rem;
+            display: none;
+        }
+
+        /* Password gate overlay (Light theme overrides) */
+        body.light-theme #loginGate {
+            background: rgba(243, 244, 246, 0.95);
+        }
+
+        body.light-theme #loginGate .login-box {
+            background: #ffffff;
+            border-color: rgba(255, 122, 0, 0.3);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body.light-theme #loginGate h2 {
+            color: #1f2937;
+        }
+
+        body.light-theme #loginGate p {
+            color: #4b5563;
+        }
+
+        body.light-theme #loginGate input {
+            background: #ffffff;
+            color: #1f2937;
+            border-color: rgba(255, 122, 0, 0.4);
+        }
+
+        body.light-theme #loginGate input:focus {
+            box-shadow: 0 0 0 2px rgba(255, 122, 0, 0.25);
+        }
+
+        /* Polling status badge */
+        #pollingStatus {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(255, 122, 0, 0.08);
+            border: 1px solid rgba(255, 122, 0, 0.2);
+            border-radius: 20px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        #pollingStatus .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            animation: pulse 2s infinite;
+        }
+
+        #pollingStatus.active .dot {
+            background: #22c55e;
+        }
+
+        #pollingStatus.idle .dot {
+            background: var(--primary);
+        }
+
+        /* Rotatable plane marker wrapper to allow CSS rotation transitions */
+        .plane-marker-icon {
+            background: none;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Password Gate -->
+    <div id="loginGate" style="display: none;">
+        <div class="login-box">
+            <i class="fa-solid fa-plane-departure"
+                style="font-size:2.5rem;color:var(--primary);margin-bottom:1rem;"></i>
+            <h2>OLO Aero</h2>
+            <p>Web Controller Access — enter your password to continue.</p>
+            <input type="password" id="loginPassword" placeholder="Password" autofocus>
+            <button class="btn" style="width:100%;" onclick="attemptLogin()">Unlock</button>
+            <div class="err" id="loginErr">Incorrect password. Try again.</div>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <header>
+        <div class="logo-section">
+            <i class="fa-solid fa-plane-departure logo-icon"></i>
+            <div>
+                <h1>OLO Aero</h1>
+                <p style="font-size: 0.7rem; color: var(--text-muted);">Web Serial Control Terminal & Flasher</p>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <button id="themeToggleBtn" class="btn btn-outline"
+                style="width: auto; padding: 0.5rem 1rem; margin: 0; font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;"
+                onclick="toggleWebTheme()">
+                <i class="fa-solid fa-sun"></i> Light
+            </button>
+            <div id="connectionContainer" style="display: none; gap: 1rem; align-items: center;">
+                <button id="btnConnect" class="btn btn-outline"
+                    style="width: auto; padding: 0.5rem 1.25rem; margin: 0;">
+                    <i class="fa-solid fa-plug"></i> Connect Device
+                </button>
+                <div class="connection-status">
+                    <div id="statusDot" class="status-dot"></div>
+                    <span id="statusText">Disconnected</span>
+                </div>
+                <div id="pollingStatus" class="idle">
+                    <div class="dot"></div>
+                    <span id="pollingText">Offline</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- File Warning Banner -->
+    <div id="fileProtocolWarning" class="warning-banner">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span><strong>Web Serial disabled:</strong> Running directly via <code>file://</code> protocol blocks browser
+            Web Serial. Please host this page on an HTTPS server (like GitHub Pages) to connect.</span>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs-nav">
+        <button id="btnTabQuickstart" class="tab-btn active" onclick="switchTab('quickstart')">📖 Quick Start</button>
+        <button id="btnTabFlasher" class="tab-btn" onclick="switchTab('flasher')">🔥 Firmware Flasher</button>
+        <button id="btnTabController" class="tab-btn" onclick="switchTab('controller')">🎛 Web Controller</button>
+        <button id="btnTabRadarSim" class="tab-btn" onclick="switchTab('radarsim')">📡 Radar Simulator</button>
+    </div>
+
+    <!-- ==============================================
+         TAB 0: QUICK START CONTENT
+         ============================================== -->
+    <div id="tabContentQuickstart"
+        style="max-width: 900px; width:100%; margin: 2rem auto; padding: 0 1.5rem 2rem 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Card 1: Overview & Flashing -->
+        <div class="card">
+            <div class="card-title">
+                <i class="fa-solid fa-bolt" style="color: var(--primary); font-size: 1.5rem;"></i>
+                <h2>1. Firmware Flashing & Screen Setup</h2>
+            </div>
+            <div style="line-height: 1.6; font-size: 0.95rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <p>1. Switch to the <strong>🔥 Firmware Flasher</strong> tab.</p>
+                <p>2. Connect your device and click <strong>Install</strong> to program the ESP32-C3 Supermini.</p>
+                <p>3. Once complete, select your OLED screen type (SSD1306 or SH110X) and save Wi-Fi details.</p>
+            </div>
+        </div>
+
+        <!-- Card 2: Simulator & Demo -->
+        <div class="card">
+            <div class="card-title">
+                <i class="fa-solid fa-satellite-dish" style="color: var(--primary); font-size: 1.5rem;"></i>
+                <h2>2. Flight Telemetry Simulator</h2>
+            </div>
+            <div style="line-height: 1.6; font-size: 0.95rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <p>1. Open the <strong>🎛 Web Controller</strong> tab and connect your device. Unlock using passcode
+                    <code>123456</code>.
+                </p>
+                <p>2. Navigate to the <strong>📡 Radar Simulator</strong> tab.</p>
+                <p>3. Drag the red plane marker or click <strong>Start Orbit Sim</strong> to stream flight data.</p>
+                <p>4. Tap the device's sensor to toggle between radar sweep and flight telemetry screens.</p>
+            </div>
+        </div>
+
+        <!-- Card 3: OpenSky & WiFi API -->
+        <div class="card">
+            <div class="card-title">
+                <i class="fa-solid fa-cloud" style="color: var(--primary); font-size: 1.5rem;"></i>
+                <h2>3. OpenSky Network API & WiFi Setup</h2>
+            </div>
+            <div style="line-height: 1.6; font-size: 0.95rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <p>• Bounding box is limited to a permanent <strong>10 km</strong> query radius around your coordinates.
+                </p>
+                <p>• Save your OpenSky Client ID and Client Secret in the settings card to avoid anonymous limit (400
+                    calls/day).</p>
+                <p>• Check API status in the Web Controller or scroll to "OpenSky Status" in the device menu.</p>
+            </div>
+        </div>
+
+        <!-- Card 4: Touch Gestures -->
+        <div class="card">
+            <div class="card-title">
+                <i class="fa-solid fa-fingerprint" style="color: var(--primary); font-size: 1.5rem;"></i>
+                <h2>4. Device Touch Gestures Reference</h2>
+            </div>
+            <div style="line-height: 1.6; font-size: 0.95rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <p>• <strong>Single Tap:</strong> Wake up from sleep, trigger looking animation, or switch Radar &amp;
+                    Telemetry screens.</p>
+                <p>• <strong>Double Tap:</strong> Open World Clock screen (auto-closes in 10s).</p>
+                <p>• <strong>Triple Tap:</strong> Open OLED Settings Menu.</p>
+                <p>• <strong>Long Press (1s):</strong> Select/toggle options in OLED Settings Menu.</p>
+                <p>• <strong>Auto-Sleep:</strong> Device goes to sleep (sleepy face animation) after 5 minutes of
+                    inactivity.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==============================================
+         TAB 1: FIRMWARE FLASHER CONTENT
+         ============================================== -->
+    <div id="tabContentFlasher"
+        style="display: none; max-width: 600px; width:100%; margin: 2rem auto; padding: 0 1.5rem 2rem 1.5rem;">
+        <div class="card" style="text-align: center;">
+            <div class="card-title" style="justify-content: center;">
+                <i class="fa-solid fa-fire" style="color: var(--primary); font-size: 1.5rem;"></i>
+                <h2 style="font-size: 1.3rem;">Firmware Programmer</h2>
+            </div>
+            <p class="text-secondary small"
+                style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 2rem; line-height: 1.5;">
+                Flash the latest OLO Aero firmware to your ESP32-C3 Supermini directly from your browser. Click the
+                button below to connect your device and begin.
+            </p>
+
+            <div style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
+                <esp-web-install-button manifest="firmware/manifest.json"></esp-web-install-button>
+            </div>
+
+            <div class="alert-olo"
+                style="background: rgba(255, 122, 0, 0.03); border: 1px solid rgba(255, 122, 0, 0.15); padding: 1rem; border-radius: 8px; text-align: left; font-size: 0.82rem; color: var(--text-muted); line-height: 1.45;">
+                <p style="margin-bottom: 0.5rem; color: var(--text-color); font-weight: 600;"><i
+                        class="fa-solid fa-circle-info" style="color: var(--primary);"></i> Setup Requirements:</p>
+                <ul style="padding-left: 1.25rem;">
+                    <li>Use <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong>.</li>
+                    <li>Ensure you are in a secure context (HTTPS) like GitHub Pages.</li>
+                    <li>Connect the ESP32-C3 Supermini via a data-capable USB cable.</li>
+                    <li>Hold the <strong>BOOT</strong> button on the board while plugging it in to enter bootloader mode
+                        if it is not detected automatically.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==============================================
+         TAB 2: WEB CONTROLLER CONTENT
+         ============================================= -->
+    <div id="tabContentController" style="display: none; width: 100%;">
+        <main>
+            <!-- LEFT COLUMN -->
+            <div class="column">
+                <!-- OpenSky Network Credentials Card -->
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-cloud" style="color: var(--primary);"></i>
+                        <h2>1. OpenSky Network API &amp; Status</h2>
+                    </div>
+                    <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.4;">
+                        Provide your OpenSky Network OAuth2 credentials (Client ID and Client Secret) to access the API.
+                        Registered clients get up to <strong>4,000 daily calls</strong>, while anonymous requests are
+                        limited to <strong>400 calls</strong>.
+                    </p>
+
+                    <!-- OpenSky Real-time connection & sync status row -->
+                    <div
+                        style="background: var(--detail-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 0.75rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-muted);">WiFi Connection:</span>
+                            <span id="oskyWifiStatus" style="font-weight: 600; color: var(--danger);">Offline</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-muted);">API Status:</span>
+                            <span id="oskyApiStatus" style="font-weight: 600; color: var(--text-muted);">Idle / Never
+                                Polled</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-muted);">Last Synced:</span>
+                            <span id="oskyLastSync" style="font-weight: 600; color: var(--text-muted);">N/A</span>
+                        </div>
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.25rem;">
+                            <span style="color: var(--text-muted);">Daily API Calls:</span>
+                            <span id="apiDailyCount" style="font-weight: 600; color: var(--primary);">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-muted);">API Credits Left:</span>
+                            <span id="apiCallsLeft" style="font-weight: 600; color: #22c55e;">400</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-muted);">Last API Call:</span>
+                            <span id="apiLastCallTs"
+                                style="font-weight: 600; color: var(--text-muted); font-size: 0.8rem;">N/A</span>
+                        </div>
+                    </div>
+
+                    <div class="form-grid" style="margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label for="oskyUser">Client ID / Username</label>
+                            <input type="text" id="oskyUser" placeholder="Client ID / username">
+                        </div>
+                        <div class="form-group">
+                            <label for="oskyPass">Client Secret / Password</label>
+                            <input type="password" id="oskyPass" placeholder="Client Secret / password">
+                        </div>
+                        <button id="btnSaveOpenSky" class="btn full-width"
+                            style="grid-column: span 2; margin-top: 0.5rem;" onclick="saveOpenSkyCredentials()"
+                            disabled>
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Save Credentials
+                        </button>
+                    </div>
+
+                    <button id="btnTriggerSync" class="btn btn-outline full-width" onclick="triggerOskySync()" disabled>
+                        <i class="fa-solid fa-arrows-rotate"></i> Sync &amp; Refresh API Stats
+                    </button>
+                </div>
+
+                <!-- Home Location Config Card -->
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-map-location-dot" style="color: var(--primary);"></i>
+                        <h2>2. Home Location Settings</h2>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group full-width"
+                            style="border-bottom: 1px solid var(--card-border); padding-bottom: 1rem; margin-bottom: 0.5rem;">
+                            <label for="citySearch">City Location Search (Home Finder)</label>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 0.25rem;">
+                                <input type="text" id="citySearch"
+                                    placeholder="Type city (e.g. London, Thrissur, New York)..." style="flex: 1;">
+                                <button id="btnCitySearch" class="btn" type="button"
+                                    style="width: auto; padding: 0.5rem 1rem;" disabled>
+                                    <i class="fa-solid fa-magnifying-glass"></i> Search
+                                </button>
+                                <button id="btnBrowserLocation" class="btn btn-outline" type="button"
+                                    style="width: auto; padding: 0.5rem 1rem;" onclick="useBrowserLocation()" disabled>
+                                    <i class="fa-solid fa-location-crosshairs"></i> Use GPS
+                                </button>
+                            </div>
+                            <span id="citySearchStatus"
+                                style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Search
+                                for a city to automatically position your primary home coordinates.</span>
+                            <!-- Small map to confirm coordinates match home lat/lon -->
+                            <div id="smallConfirmMap"
+                                style="height: 180px; width: 100%; border-radius: 8px; border: 1px solid var(--card-border); margin-top: 0.75rem; background: #050505;">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="homeLat">Home Latitude</label>
+                            <input type="number" id="homeLat" step="0.0001" value="10.5200">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="homeLon">Home Longitude</label>
+                            <input type="number" id="homeLon" step="0.0001" value="76.2100">
+                        </div>
+
+                        <button id="btnSaveLocation" class="btn full-width"
+                            style="grid-column: span 2; margin-top: 0.5rem;" disabled>
+                            <i class="fa-solid fa-floppy-disk"></i> Save Location Coords
+                        </button>
+                    </div>
+                </div>
+
+                <!-- WiFi & Display Controller Setup Card -->
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-wifi" style="color: var(--primary);"></i>
+                        <h2>3. WiFi &amp; Display Controller Setup</h2>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="wifiSsid">SSID</label>
+                            <input type="text" id="wifiSsid" placeholder="WiFi Network Name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="wifiPass">Password</label>
+                            <div style="position: relative;">
+                                <input type="password" id="wifiPass" placeholder="WiFi Password"
+                                    style="padding-right: 2.5rem; width: 100%;">
+                                <button type="button" onclick="togglePasswordVisibility()"
+                                    style="position: absolute; right: 0; top: 0; height: 100%; border: none; background: transparent; color: var(--text-muted); cursor: pointer; padding: 0 1rem; outline: none;">
+                                    <i id="passEyeIcon" class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="networkOnline">Flight Tracking Mode</label>
+                            <select id="networkOnline">
+                                <option value="0">Offline Mode (Demo / LED Control)</option>
+                                <option value="1">WiFi Mode (OpenSky Live Tracking)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="displayType">Display Controller</label>
+                            <select id="displayType">
+                                <option value="0">SSD1306 (Standard 0.96" OLED)</option>
+                                <option value="1">SH110X / SH1106 (Standard 1.3" OLED)</option>
+                            </select>
+                        </div>
+
+                        <button id="btnSaveConfig" class="btn full-width"
+                            style="grid-column: span 2; margin-top: 0.5rem;" disabled>
+                            <i class="fa-solid fa-floppy-disk"></i> Save WiFi &amp; Display (Reboots device)
+                        </button>
+                    </div>
+                </div>
+
+            </div> <!-- Closes LEFT COLUMN -->
+
+            <!-- RIGHT COLUMN -->
+            <div class="column">
+
+                <!-- Display, Theme & LED Settings -->
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-palette" style="color: var(--primary);"></i>
+                        <h2>Display, Theme &amp; LED Settings</h2>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        <div
+                            style="display: flex; flex-direction: column; gap: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; color: var(--text-color);">LED Global Power</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="settingLedEn" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; color: var(--text-color);">LED Notification Mode</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="settingLedBy">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; color: var(--text-color);">Invert Screen Colors</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="settingInvert">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="themeId">Radar Screen Layout</label>
+                                <select id="themeId">
+                                    <option value="0">Default Minimal Radar</option>
+                                    <option value="1">Tactical Circular Grid</option>
+                                    <option value="2">Futuristic Starburst</option>
+                                    <option value="3">HUD Telemetry Dashboard</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="bootText">Boot Text Banner</label>
+                                <input type="text" id="bootText" value="OLO Aero" maxlength="31">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ledBrightness">LED Brightness (0-255)</label>
+                                <input type="number" id="ledBrightness" min="0" max="255" value="60">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ledColor">Custom LED Color</label>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="color" id="ledColor" value="#ff7a00"
+                                        style="width: 50px; height: 38px; padding: 2px; cursor: pointer; border-radius: 6px;">
+                                    <span id="ledColorHex"
+                                        style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">#ff7a00</span>
+                                </div>
+                            </div>
+
+                            <button id="btnSaveTheme" class="btn full-width"
+                                style="grid-column: span 2; margin-top: 0.5rem;" disabled>
+                                <i class="fa-solid fa-sliders"></i> Apply Theme &amp; LED Settings
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buzzer & Beep Melodies Setup -->
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-volume-high" style="color: var(--primary);"></i>
+                        <h2>Buzzer &amp; Beep Melodies</h2>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        <div
+                            style="display: flex; flex-direction: column; gap: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; color: var(--text-color);">Buzzer Global Power</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="settingSound" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; color: var(--text-color);">Sound Bypass
+                                    Clicks/Chirps</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="settingSoundBy">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; color: var(--text-color);">Hourly Chime Tones</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="settingChime">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="buzzerVolume">Buzzer Volume (0-100%)</label>
+                                <input type="number" id="buzzerVolume" min="0" max="100" value="80">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="beepBoot">Boot Tone Melody</label>
+                                <select id="beepBoot">
+                                    <option value="0">No Sound (Silent)</option>
+                                    <option value="1">Short High Chirp</option>
+                                    <option value="2">Confirming Double Tone</option>
+                                    <option value="3">Alerting Triple Tone</option>
+                                    <option value="4">Ascending Staircase Scale</option>
+                                    <option value="5">Descending Cascade Scale</option>
+                                    <option value="8">Rising 10-Beat Fast Sound</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="beepConfig">WiFi Configured Beep</label>
+                                <select id="beepConfig">
+                                    <option value="0">Silent</option>
+                                    <option value="1">Short Chirp</option>
+                                    <option value="2">Double Beep</option>
+                                    <option value="3">Triple Beep</option>
+                                    <option value="4">Ascending</option>
+                                    <option value="5">Descending</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="beepTheme">Theme Change Saved Beep</label>
+                                <select id="beepTheme">
+                                    <option value="0">Silent</option>
+                                    <option value="1">Short Chirp</option>
+                                    <option value="2">Double Beep</option>
+                                    <option value="3">Triple Beep</option>
+                                    <option value="4">Ascending</option>
+                                    <option value="5">Descending</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="beepFlight">Flight Warning Beep Style</label>
+                                <select id="beepFlight">
+                                    <option value="0">Silent</option>
+                                    <option value="1">Short Chirp</option>
+                                    <option value="2">Double Beep</option>
+                                    <option value="3">Triple Beep</option>
+                                    <option value="4">Ascending</option>
+                                    <option value="5">Descending</option>
+                                </select>
+                            </div>
+
+                            <button id="btnSaveAudio" class="btn full-width"
+                                style="grid-column: span 2; margin-top: 0.5rem;" disabled>
+                                <i class="fa-solid fa-music"></i> Save Audio Preferences
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clock & Admin Settings -->
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-clock" style="color: var(--primary);"></i>
+                        <h2>Clock &amp; Admin Settings</h2>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                        <div
+                            style="display: flex; flex-direction: column; gap: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.85rem; color: var(--text-color);">12-Hour Time Format</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="settingClk12">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="settingTzOffset">Local Timezone</label>
+                                <select id="settingTzOffset">
+                                    <option value="-720">UTC-12:00 (Baker Island)</option>
+                                    <option value="-660">UTC-11:00 (Niue, Samoa)</option>
+                                    <option value="-600">UTC-10:00 (Hawaii, Tahiti)</option>
+                                    <option value="-540">UTC-09:00 (Alaska)</option>
+                                    <option value="-480">UTC-08:00 (Pacific Time - US/Canada)</option>
+                                    <option value="-420">UTC-07:00 (Mountain Time - US/Canada)</option>
+                                    <option value="-360">UTC-06:00 (Central Time - US/Canada/Mexico)</option>
+                                    <option value="-300">UTC-05:00 (Eastern Time - US/Canada/Colombia)</option>
+                                    <option value="-240">UTC-04:00 (Atlantic Time - Canada/Bolivia)</option>
+                                    <option value="-210">UTC-03:30 (Newfoundland)</option>
+                                    <option value="-180">UTC-03:00 (Brazil, Argentina)</option>
+                                    <option value="-120">UTC-02:00 (South Georgia)</option>
+                                    <option value="-60">UTC-01:00 (Azores, Cape Verde)</option>
+                                    <option value="0">UTC+00:00 (GMT - UK, Iceland, Portugal)</option>
+                                    <option value="60">UTC+01:00 (CET - Germany, France, Italy)</option>
+                                    <option value="120">UTC+02:00 (EET - Ukraine, Egypt, South Africa)</option>
+                                    <option value="180">UTC+03:00 (Moscow, Saudi Arabia, East Africa)</option>
+                                    <option value="210">UTC+03:30 (Iran)</option>
+                                    <option value="240">UTC+04:00 (UAE, Azerbaijan, Georgia)</option>
+                                    <option value="270">UTC+04:30 (Afghanistan)</option>
+                                    <option value="300">UTC+05:00 (Pakistan, Maldives, Uzbekistan)</option>
+                                    <option value="330" selected>UTC+05:30 (IST - India, Sri Lanka)</option>
+                                    <option value="345">UTC+05:45 (Nepal)</option>
+                                    <option value="360">UTC+06:00 (Bangladesh, Bhutan, Novosibirsk)</option>
+                                    <option value="390">UTC+06:30 (Myanmar, Cocos Islands)</option>
+                                    <option value="420">UTC+07:00 (Thailand, Vietnam, Indonesia)</option>
+                                    <option value="480">UTC+08:00 (Singapore, China, Western Australia)</option>
+                                    <option value="540">UTC+09:00 (Japan, Korea, Yakutsk)</option>
+                                    <option value="570">UTC+09:30 (Central Australia)</option>
+                                    <option value="600">UTC+10:00 (Eastern Australia, Vladivostok)</option>
+                                    <option value="660">UTC+11:00 (Solomon Islands, Vanuatu)</option>
+                                    <option value="720">UTC+12:00 (New Zealand, Fiji)</option>
+                                    <option value="765">UTC+12:45 (Chatham Islands)</option>
+                                    <option value="780">UTC+13:00 (Tonga, Samoa)</option>
+                                    <option value="840">UTC+14:00 (Kiribati Line Islands)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="settingLocalCity">Local City Name</label>
+                                <input type="text" id="settingLocalCity" value="Thrissur"
+                                    placeholder="Local location name">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="settingCity2">World Clock City 2</label>
+                                <select id="settingCity2">
+                                    <option value="0">UTC</option>
+                                    <option value="1">London</option>
+                                    <option value="2">New York</option>
+                                    <option value="3">Chicago</option>
+                                    <option value="4">Los Angeles</option>
+                                    <option value="5">Dubai</option>
+                                    <option value="6">Mumbai</option>
+                                    <option value="7">Singapore</option>
+                                    <option value="8">Tokyo</option>
+                                    <option value="9">Sydney</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="settingWebPassword">Change Admin Password</label>
+                                <input type="text" id="settingWebPassword" value="admin"
+                                    placeholder="New login password">
+                            </div>
+
+                            <div style="display: flex; gap: 0.75rem; grid-column: span 2; margin-top: 0.5rem;">
+                                <button id="btnSaveDeviceSettings" class="btn" style="flex: 1;" disabled>
+                                    <i class="fa-solid fa-floppy-disk"></i> Save Clock &amp; Admin
+                                </button>
+                                <button class="btn btn-outline" style="flex: 1;" onclick="syncComputerTime()">
+                                    <i class="fa-solid fa-clock"></i> Sync Time
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Serial Log Monitor -->
+                <div class="card" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div class="card-title" style="margin-bottom: 0.25rem;">
+                        <i class="fa-solid fa-terminal" style="color: var(--text-color);"></i>
+                        <h2>Serial Data Console</h2>
+                    </div>
+
+                    <div id="console">
+                        <div class="console-line">
+                            <span class="console-time">--:--:--</span>
+                            <span class="console-msg info">Connect to COM port to begin parsing telemetry data...</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.25rem;">
+                        <input type="text" id="rawCommand"
+                            placeholder="Send manual Serial command (e.g. RADAR,lat,lon,...)" disabled style="flex: 1;">
+                        <button id="btnSendRaw" class="btn" style="width: auto; padding: 0.625rem 1rem;"
+                            disabled>Send</button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Danger Zone (Spans full width across both sides) -->
+        <div style="max-width: 1200px; margin: 0 auto 2rem auto; padding: 0 1.5rem; width: 100%;">
+            <div class="card" style="border-color: rgba(239,68,68,0.25); margin-top: 1rem;">
+                <div class="card-title">
+                    <i class="fa-solid fa-triangle-exclamation" style="color: #ef4444;"></i>
+                    <h2 style="color: #ef4444;">Danger Zone</h2>
+                </div>
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <p style="font-size:0.82rem;color:var(--text-muted);line-height:1.4;max-width: 700px; margin: 0;">
+                        Factory reset erases all NVS stored settings (WiFi, coordinates, preferences) and reboots the
+                        device. This action is irreversible.
+                    </p>
+                    <button class="btn"
+                        style="background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.5); color:#ef4444; width: auto; padding: 0.625rem 1.25rem;"
+                        onclick="sendFactoryReset()">
+                        <i class="fa-solid fa-trash"></i> Factory Reset Device
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==============================================
+         TAB 3: RADAR SIMULATOR CONTENT
+         ============================================== -->
+    <div id="tabContentRadarSim" style="display: none; width: 100%;">
+        <main>
+            <!-- LEFT COLUMN -->
+            <div class="column">
+
+                <!-- Radar Simulator & Telemetry Card -->
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-satellite-dish" style="color: var(--primary);"></i>
+                        <h2>Radar Simulator &amp; Telemetry</h2>
+                    </div>
+                    <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.4;">
+                        Simulate aircraft target data locally and send it over Web Serial to verify radar micro-display
+                        responses.
+                    </p>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="planeCallsign">Aircraft Flight ID</label>
+                            <input type="text" id="planeCallsign" value="AI101" maxlength="15">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="planeHeading">True Course Track (°)</label>
+                            <input type="number" id="planeHeading" min="0" max="359" value="120">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="planeAlt">Altitude (Feet)</label>
+                            <input type="number" id="planeAlt" min="0" max="50000" value="32000">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="planeSpeed">Ground Speed (Knots)</label>
+                            <input type="number" id="planeSpeed" min="0" max="1000" value="480">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="planeLat">Latitude</label>
+                            <input type="number" id="planeLat" step="0.0001" value="10.6000">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="planeLon">Longitude</label>
+                            <input type="number" id="planeLon" step="0.0001" value="76.2800">
+                        </div>
+
+                        <div class="form-group full-width"
+                            style="display: flex; flex-direction: row; gap: 0.75rem; margin-top: 1rem; grid-column: span 2;">
+                            <button id="btnSendRadar" class="btn" style="flex: 1;" disabled>
+                                <i class="fa-solid fa-satellite-dish"></i> Send Telemetry
+                            </button>
+                            <button id="btnAutoSim" class="btn btn-outline" style="flex: 1.2;" disabled>
+                                <i class="fa-solid fa-circle-play"></i> Start Orbit Sim
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Telemetry Simulator Console -->
+                <div class="card" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div class="card-title" style="margin-bottom: 0.25rem;">
+                        <i class="fa-solid fa-terminal" style="color: var(--text-color);"></i>
+                        <h2>Telemetry Console Monitor</h2>
+                    </div>
+
+                    <div id="simConsole">
+                        <div class="console-line">
+                            <span class="console-time">--:--:--</span>
+                            <span class="console-msg info">Telemetry simulator ready. Connect COM port to
+                                stream...</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div class="column">
+
+                <!-- Geographic Position Map Card -->
+                <div class="card" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="card-title" style="margin-bottom: 0.5rem;">
+                        <i class="fa-solid fa-map-location-dot" style="color: var(--primary);"></i>
+                        <h2>Geographic Position</h2>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                        Drag the <strong>blue home icon</strong> to move your companion's location. The <strong>red
+                            plane icon</strong> shows the active simulated telemetry aircraft (demo data). Nearby
+                        airports are plotted as blue icons.
+                    </p>
+
+                    <div
+                        style="background: var(--detail-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.25rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 500; font-size: 0.85rem; color: var(--text-muted);">Radar Tracking
+                                Radius: <span id="radarRangeVal"
+                                    style="color: var(--primary); font-weight: 600;">50</span> km</span>
+                        </div>
+                        <input type="range" id="radarRangeSlider" min="10" max="50" step="1" value="50"
+                            style="width: 100%; cursor: pointer; accent-color: var(--primary);">
+                    </div>
+
+                    <div id="map"></div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Post-Flash Setup Modal -->
+    <div id="configModal" class="modal-overlay" style="display: none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>⚡ Configure Device Settings</h3>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">Your OLO Aero device is successfully flashed! Select your display type and
+                    optionally Wi-Fi credentials to write them to NVS flash.</p>
+
+                <div class="modal-form-group">
+                    <label for="modalDisplayType">OLED Screen Type</label>
+                    <select id="modalDisplayType">
+                        <option value="0">SSD1306 (Standard 0.96" OLED screen)</option>
+                        <option value="1">SH110X / SH1106 (Standard 1.3" OLED screen)</option>
+                    </select>
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="modalWifiSsid">Wi-Fi Network Name (SSID) - Optional</label>
+                    <input type="text" id="modalWifiSsid" placeholder="e.g. MyHomeWiFi">
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="modalWifiPass">Wi-Fi Password - Optional</label>
+                    <input type="password" id="modalWifiPass" placeholder="Enter WiFi password">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="skipPostFlashConfig()">Skip Wi-Fi</button>
+                <button class="btn" onclick="savePostFlashConfig()">Save &amp; Reboot</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Library scripts -->
+    <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+
+    <script>
+        // --- Web Serial State variables ---
+        let port;
+        let reader;
+        let keepReading = true;
+        let timeSyncInterval = null;
+
+        // --- Simulated flight path timer ---
+        let simInterval = null;
+        let simAngle = 0;
+
+        // --- Leaflet Map variables ---
+        let map;
+        let homeMarker;
+        let planeMarker;
+        let rangeCircle;
+        let tileLayer;
+
+        // Small confirmation map variables
+        let smallMap;
+        let smallHomeMarker;
+        let smallRangeCircle;
+        let smallTileLayer;
+
+        // --- DOM Elements ---
+        const btnConnect = document.getElementById('btnConnect');
+        const btnSaveConfig = document.getElementById('btnSaveConfig');
+        const btnSaveTheme = document.getElementById('btnSaveTheme');
+        const btnSendRadar = document.getElementById('btnSendRadar');
+        const btnAutoSim = document.getElementById('btnAutoSim');
+        const btnSendRaw = document.getElementById('btnSendRaw');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const consoleContainer = document.getElementById('console');
+        const wifiSsid = document.getElementById('wifiSsid');
+        const wifiPass = document.getElementById('wifiPass');
+        const homeLat = document.getElementById('homeLat');
+        const homeLon = document.getElementById('homeLon');
+        const displayType = document.getElementById('displayType');
+        const networkOnline = document.getElementById('networkOnline');
+        const planeLat = document.getElementById('planeLat');
+        const planeLon = document.getElementById('planeLon');
+        const planeCallsign = document.getElementById('planeCallsign');
+        const planeHeading = document.getElementById('planeHeading');
+        const planeAlt = document.getElementById('planeAlt');
+        const planeSpeed = document.getElementById('planeSpeed');
+        const rawCommand = document.getElementById('rawCommand');
+
+        // Theme & LED selectors
+        const themeId = document.getElementById('themeId');
+        const bootText = document.getElementById('bootText');
+        const ledBrightness = document.getElementById('ledBrightness');
+        const btnSaveLocation = document.getElementById('btnSaveLocation');
+        const btnSaveOpenSky = document.getElementById('btnSaveOpenSky');
+        const btnTriggerSync = document.getElementById('btnTriggerSync');
+        const btnSaveDeviceSettings = document.getElementById('btnSaveDeviceSettings');
+        const ledColor = document.getElementById('ledColor');
+        const ledColorHex = document.getElementById('ledColorHex');
+
+        // City Search selectors
+        const citySearch = document.getElementById('citySearch');
+        const btnCitySearch = document.getElementById('btnCitySearch');
+        const citySearchStatus = document.getElementById('citySearchStatus');
+
+        // Audio & Buzzer selectors
+        const buzzerVolume = document.getElementById('buzzerVolume');
+        const beepBoot = document.getElementById('beepBoot');
+        const beepConfig = document.getElementById('beepConfig');
+        const beepTheme = document.getElementById('beepTheme');
+        const beepFlight = document.getElementById('beepFlight');
+        const btnSaveAudio = document.getElementById('btnSaveAudio');
+
+        // Initialisation of page
+        window.addEventListener('load', () => {
+            // Load saved theme
+            const savedTheme = localStorage.getItem('webTheme');
+            const themeBtn = document.getElementById('themeToggleBtn');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+                if (themeBtn) themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i> Dark';
+            } else {
+                if (themeBtn) themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i> Light';
+            }
+
+            // Check if Web Serial is supported
+            if (!("serial" in navigator)) {
+                document.getElementById('fileProtocolWarning').style.display = 'flex';
+                btnConnect.disabled = true;
+            } else if (window.location.protocol === 'file:') {
+                document.getElementById('fileProtocolWarning').style.display = 'flex';
+            }
+
+            // Sync LED color picker text on input
+            if (ledColor) {
+                ledColor.addEventListener('input', () => {
+                    ledColorHex.innerText = ledColor.value;
+                });
+            }
+
+            // Hook up ESP Web Tools success event
+            const installBtn = document.querySelector('esp-web-install-button');
+            if (installBtn) {
+                installBtn.addEventListener('install-success', () => {
+                    document.getElementById('configModal').style.display = 'flex';
+                });
+            }
+
+            // Hook up synchronized range sliders
+            const mainSlider = document.getElementById('radarRangeSlider');
+            const smallSlider = document.getElementById('smallRadarRangeSlider');
+
+            if (mainSlider) {
+                mainSlider.addEventListener('input', () => {
+                    syncSliders(parseInt(mainSlider.value));
+                });
+                mainSlider.addEventListener('change', () => {
+                    saveDeviceSettings();
+                });
+            }
+
+            if (smallSlider) {
+                smallSlider.addEventListener('input', () => {
+                    syncSliders(parseInt(smallSlider.value));
+                });
+                smallSlider.addEventListener('change', () => {
+                    saveDeviceSettings();
+                });
+            }
+        });
+
+        // Global Synchronized Sliders logic
+        function syncSliders(value) {
+            const mainSlider = document.getElementById('radarRangeSlider');
+            const mainValDisp = document.getElementById('radarRangeVal');
+            const smallSlider = document.getElementById('smallRadarRangeSlider');
+            const smallValDisp = document.getElementById('smallRadarRangeVal');
+
+            if (mainSlider) mainSlider.value = value;
+            if (mainValDisp) mainValDisp.innerText = value;
+            if (smallSlider) smallSlider.value = value;
+            if (smallValDisp) smallValDisp.innerText = value;
+
+            if (rangeCircle) rangeCircle.setRadius(value * 1000);
+            if (smallRangeCircle) smallRangeCircle.setRadius(value * 1000);
+        }
+
+        let isUnlocked = false;
+
+        // Tab Switching
+        function switchTab(tabId) {
+            if (tabId !== 'radarsim') {
+                if (simInterval) {
+                    clearInterval(simInterval);
+                    simInterval = null;
+                    if (btnAutoSim) {
+                        btnAutoSim.innerHTML = '<i class="fa-solid fa-circle-play"></i> Start Orbit Sim';
+                        btnAutoSim.className = "btn btn-outline";
+                    }
+                }
+            }
+            const quickstartTab = document.getElementById('tabContentQuickstart');
+            const flasherTab = document.getElementById('tabContentFlasher');
+            const controllerTab = document.getElementById('tabContentController');
+            const radarsimTab = document.getElementById('tabContentRadarSim');
+
+            const btnQuickstart = document.getElementById('btnTabQuickstart');
+            const btnFlasher = document.getElementById('btnTabFlasher');
+            const btnController = document.getElementById('btnTabController');
+            const btnRadarSim = document.getElementById('btnTabRadarSim');
+
+            quickstartTab.style.display = 'none';
+            flasherTab.style.display = 'none';
+            controllerTab.style.display = 'none';
+            radarsimTab.style.display = 'none';
+            document.getElementById('loginGate').style.display = 'none';
+
+            btnQuickstart.classList.remove('active');
+            btnFlasher.classList.remove('active');
+            btnController.classList.remove('active');
+            btnRadarSim.classList.remove('active');
+
+            window.pendingTabId = tabId;
+
+            if (tabId === 'quickstart') {
+                quickstartTab.style.display = 'block';
+                btnQuickstart.classList.add('active');
+                document.getElementById('connectionContainer').style.display = 'none';
+                disconnectDevice();
+            } else if (tabId === 'flasher') {
+                flasherTab.style.display = 'block';
+                btnFlasher.classList.add('active');
+                document.getElementById('connectionContainer').style.display = 'none';
+                disconnectDevice();
+            } else {
+                if (tabId === 'controller') btnController.classList.add('active');
+                else if (tabId === 'radarsim') btnRadarSim.classList.add('active');
+
+                if (!isUnlocked) {
+                    document.getElementById('loginGate').style.display = 'flex';
+                    document.getElementById('connectionContainer').style.display = 'none';
+                } else {
+                    document.getElementById('connectionContainer').style.display = 'flex';
+                    if (tabId === 'controller') {
+                        controllerTab.style.display = 'block';
+                        sendSerial('RESUME_SYNC').catch(() => { });
+                        if (!smallMap) {
+                            initSmallMap();
+                        } else {
+                            setTimeout(() => {
+                                smallMap.invalidateSize();
+                                const lat = parseFloat(homeLat.value) || 10.52;
+                                const lon = parseFloat(homeLon.value) || 76.21;
+                                smallMap.setView([lat, lon], 9);
+                            }, 50);
+                        }
+                    } else if (tabId === 'radarsim') {
+                        radarsimTab.style.display = 'block';
+                        sendSerial('SUSPEND_SYNC').catch(() => { });
+                        if (!map) {
+                            initMap();
+                        } else {
+                            setTimeout(() => {
+                                map.invalidateSize();
+                                if (homeMarker) {
+                                    map.panTo(homeMarker.getLatLng());
+                                }
+                            }, 50);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Toggle Password visibility
+        function togglePasswordVisibility() {
+            const passEyeIcon = document.getElementById('passEyeIcon');
+            if (wifiPass.type === "password") {
+                wifiPass.type = "text";
+                passEyeIcon.className = "fa-solid fa-eye-slash";
+            } else {
+                wifiPass.type = "password";
+                passEyeIcon.className = "fa-solid fa-eye";
+            }
+        }
+
+        let syncedWebPassword = 'admin';
+
+        // Setup Leaflet Maps
+        let airportMarkers = [];
+
+        function updateAirportMarkers(lat, lon) {
+            if (!map) return;
+            // Remove old airport markers
+            airportMarkers.forEach(m => map.removeLayer(m));
+            airportMarkers = [];
+
+            // Preset airports or dynamic ones near home
+            const majorAirports = [
+                { name: "Cochin International Airport (COK)", lat: 10.1520, lon: 76.4019 },
+                { name: "Calicut International Airport (CCJ)", lat: 11.1368, lon: 75.9553 },
+                { name: "Coimbatore International Airport (CJB)", lat: 11.0300, lon: 77.0434 },
+                { name: "Trivandrum International Airport (TRV)", lat: 8.4821, lon: 76.9200 },
+                { name: "Thrissur Heliport (VOCO)", lat: 10.5190, lon: 76.2230 },
+                { name: "Mangalore Airport (IXE)", lat: 12.9613, lon: 74.8900 }
+            ];
+
+            const nearbyList = majorAirports.filter(ap => {
+                const dLat = Math.abs(ap.lat - lat);
+                const dLon = Math.abs(ap.lon - lon);
+                return dLat < 2.0 && dLon < 2.0;
+            });
+
+            // Generate mock airports if none nearby
+            if (nearbyList.length === 0) {
+                nearbyList.push({ name: `Local Airport A`, lat: lat + 0.35, lon: lon - 0.42 });
+                nearbyList.push({ name: `Regional Airport B`, lat: lat - 0.51, lon: lon + 0.33 });
+                nearbyList.push({ name: `International Airport C`, lat: lat + 0.62, lon: lon + 0.58 });
+            }
+
+            nearbyList.forEach(ap => {
+                const marker = L.marker([ap.lat, ap.lon], {
+                    icon: L.divIcon({
+                        className: 'airport-marker-icon',
+                        html: '<i class="fa-solid fa-plane-arrival" style="color: #3b82f6; font-size: 1.1rem; filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.5));"></i>',
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10]
+                    }),
+                    title: ap.name
+                }).addTo(map);
+                marker.bindPopup(`<b>${ap.name}</b><br>Lat: ${ap.lat.toFixed(4)}<br>Lon: ${ap.lon.toFixed(4)}`);
+                airportMarkers.push(marker);
+            });
+        }
+
+        // Update or create the red plane marker on the map with custom rotation
+        function updatePlaneMarker(lat, lon, heading, callsign, alt, speed) {
+            if (!map) return;
+            const pos = new L.LatLng(lat, lon);
+            const planeHtml = `<i class="fa-solid fa-plane" style="color: #ef4444; font-size: 1.5rem; transform: rotate(${heading}deg); filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.6)); transition: transform 0.2s ease;"></i>`;
+
+            if (planeMarker) {
+                planeMarker.setLatLng(pos);
+                planeMarker.setIcon(L.divIcon({
+                    className: 'plane-marker-icon',
+                    html: planeHtml,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                }));
+            } else {
+                planeMarker = L.marker(pos, {
+                    icon: L.divIcon({
+                        className: 'plane-marker-icon',
+                        html: planeHtml,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    }),
+                    draggable: true,
+                    title: callsign || "Simulated Plane"
+                }).addTo(map);
+
+                planeMarker.on('dragend', function (e) {
+                    const position = planeMarker.getLatLng();
+                    planeLat.value = position.lat.toFixed(4);
+                    planeLon.value = position.lng.toFixed(4);
+
+                    if (simInterval) {
+                        clearInterval(simInterval);
+                        simInterval = null;
+                        btnAutoSim.innerHTML = '<i class="fa-solid fa-circle-play"></i> Start Orbit Sim';
+                        btnAutoSim.className = "btn btn-outline";
+                        logConsole("Orbit simulation paused due to manual aircraft drag.", "info");
+                    }
+
+                    sendCurrentRadarTelemetry();
+                    logConsole(`Aircraft relocated via map drag to Lat: ${position.lat.toFixed(4)}, Lon: ${position.lng.toFixed(4)}`, 'info');
+                });
+            }
+
+            planeMarker.bindPopup(`<b>${callsign || 'Simulated Plane'}</b><br>Altitude: ${alt} ft<br>Speed: ${speed} kts<br>Heading: ${heading}°<br>Lat: ${lat.toFixed(4)}<br>Lon: ${lon.toFixed(4)}`);
+        }
+
+        function toggleWebTheme() {
+            const isLight = document.body.classList.toggle('light-theme');
+            localStorage.setItem('webTheme', isLight ? 'light' : 'dark');
+
+            const btn = document.getElementById('themeToggleBtn');
+            if (isLight) {
+                btn.innerHTML = '<i class="fa-solid fa-moon"></i> Dark';
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-sun"></i> Light';
+            }
+            setMapTheme(isLight);
+        }
+
+        function setMapTheme(isLight) {
+            const url = isLight
+                ? 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+                : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+            const attrib = '&copy; OpenStreetMap contributors &copy; CARTO';
+
+            if (map) {
+                if (tileLayer) map.removeLayer(tileLayer);
+                tileLayer = L.tileLayer(url, { attribution: attrib }).addTo(map);
+            }
+            if (smallMap) {
+                if (smallTileLayer) smallMap.removeLayer(smallTileLayer);
+                smallTileLayer = L.tileLayer(url, { attribution: attrib }).addTo(smallMap);
+            }
+        }
+
+        function initMap() {
+            const initialLat = parseFloat(homeLat.value);
+            const initialLon = parseFloat(homeLon.value);
+
+            map = L.map('map').setView([initialLat, initialLon], 11);
+            setMapTheme(document.body.classList.contains('light-theme'));
+
+            // Blue Marker for Home location
+            homeMarker = L.marker([initialLat, initialLon], {
+                draggable: true,
+                title: "Home Position"
+            }).addTo(map);
+
+            // Bounding box circle around home
+            const initialRadius = parseInt(document.getElementById('radarRangeSlider').value) * 1000;
+            rangeCircle = L.circle([initialLat, initialLon], {
+                color: '#ff7a00',
+                fillColor: '#ff7a00',
+                fillOpacity: 0.08,
+                radius: initialRadius
+            }).addTo(map);
+
+            // Plot airports around initial coords
+            updateAirportMarkers(initialLat, initialLon);
+
+            // Plot red plane marker with initial demo data (home offset)
+            const demoLat = initialLat + 0.12;
+            const demoLon = initialLon + 0.10;
+            updatePlaneMarker(demoLat, demoLon, 120, "AI101", 32000, 480);
+
+            // Marker Drag handler to update inputs
+            homeMarker.on('dragend', function (e) {
+                const position = homeMarker.getLatLng();
+                const latStr = position.lat.toFixed(4);
+                const lonStr = position.lng.toFixed(4);
+                homeLat.value = latStr;
+                homeLon.value = lonStr;
+                rangeCircle.setLatLng(position);
+                updateAirportMarkers(position.lat, position.lng);
+                updateSmallMapPosition(position.lat, position.lng);
+                logConsole(`Home relocated to Lat: ${latStr}, Lon: ${lonStr}`, 'info');
+
+                // Auto-sync coordinates to device in real-time
+                sendSerial(`SET_LOCATION,${latStr},${lonStr}`);
+            });
+        }
+
+        function initSmallMap() {
+            const initialLat = parseFloat(homeLat.value) || 10.52;
+            const initialLon = parseFloat(homeLon.value) || 76.21;
+
+            smallMap = L.map('smallConfirmMap').setView([initialLat, initialLon], 9);
+            setMapTheme(document.body.classList.contains('light-theme'));
+
+            // Draggable marker
+            smallHomeMarker = L.marker([initialLat, initialLon], {
+                draggable: true,
+                title: "Home Position"
+            }).addTo(smallMap);
+
+            // Orange range circle on small map
+            const initialRadius = 50 * 1000; // default 50km
+            smallRangeCircle = L.circle([initialLat, initialLon], {
+                color: '#ff7a00',
+                fillColor: '#ff7a00',
+                fillOpacity: 0.08,
+                radius: initialRadius
+            }).addTo(smallMap);
+
+            // Drag handler to update inputs
+            smallHomeMarker.on('dragend', function (e) {
+                const position = smallHomeMarker.getLatLng();
+                const latStr = position.lat.toFixed(4);
+                const lonStr = position.lng.toFixed(4);
+                homeLat.value = latStr;
+                homeLon.value = lonStr;
+
+                if (smallRangeCircle) {
+                    smallRangeCircle.setLatLng(position);
+                }
+                // Sync large map if initialized
+                if (map && homeMarker) {
+                    homeMarker.setLatLng(position);
+                    rangeCircle.setLatLng(position);
+                    updateAirportMarkers(position.lat, position.lng);
+                }
+                logConsole(`Home relocated via small map to Lat: ${latStr}, Lon: ${lonStr}`, 'info');
+
+                // Auto-sync coordinates to device in real-time
+                sendSerial(`SET_LOCATION,${latStr},${lonStr}`);
+            });
+        }
+
+        function updateSmallMapPosition(lat, lon) {
+            if (!smallMap) return;
+            const pos = new L.LatLng(lat, lon);
+            if (smallHomeMarker) {
+                smallHomeMarker.setLatLng(pos);
+            }
+            if (smallRangeCircle) {
+                smallRangeCircle.setLatLng(pos);
+            }
+            smallMap.panTo(pos);
+        }
+
+        // Update home coords from preset buttons
+        function setHomeCoordinates(lat, lon, label) {
+            const latStr = lat.toFixed(4);
+            const lonStr = lon.toFixed(4);
+            homeLat.value = latStr;
+            homeLon.value = lonStr;
+
+            const newPos = new L.LatLng(lat, lon);
+
+            if (homeMarker) homeMarker.setLatLng(newPos);
+            if (rangeCircle) rangeCircle.setLatLng(newPos);
+            if (map) map.panTo(newPos);
+
+            updateSmallMapPosition(lat, lon);
+            updateAirportMarkers(lat, lon);
+            logConsole(`Coordinates preset loaded: ${label}`, 'info');
+
+            // Auto-sync coordinates to device in real-time
+            sendSerial(`SET_LOCATION,${latStr},${lonStr}`);
+        }
+
+        // Sync computer local time to device
+        function syncComputerTime() {
+            const epoch = Math.floor(Date.now() / 1000);
+            sendSerial(`TIME,${epoch}`);
+            logConsole(`Syncing computer local epoch: ${epoch}`, 'info');
+        }
+
+        // --- Web Serial Connection Logic ---
+        async function disconnectDevice() {
+            if (port) {
+                try {
+                    await sendSerial('RESUME_SYNC');
+                } catch (e) { }
+                keepReading = false;
+                if (reader) {
+                    try { await reader.cancel(); } catch (e) { }
+                }
+                try {
+                    await port.close();
+                } catch (e) { }
+                setDisconnectedUI();
+            }
+        }
+
+        btnConnect.addEventListener('click', async () => {
+            if (port) {
+                await disconnectDevice();
+            } else {
+                // Connect
+                try {
+                    port = await navigator.serial.requestPort();
+                    await port.open({ baudRate: 115200 });
+
+                    keepReading = true;
+                    setConnectedUI();
+
+                    // Start reading
+                    readLoop();
+                } catch (err) {
+                    logConsole(`Failed to open serial port: ${err.message}`, 'error');
+                    setDisconnectedUI();
+                }
+            }
+        });
+
+        // Set UI to Connected
+        function setConnectedUI() {
+            btnConnect.innerHTML = '<i class="fa-solid fa-unlink"></i> Disconnect';
+            btnConnect.className = "btn btn-danger";
+            statusDot.className = "status-dot connected";
+            statusText.innerText = "Connected";
+
+            // Enable inputs
+            wifiSsid.disabled = false;
+            wifiPass.disabled = false;
+            homeLat.disabled = false;
+            homeLon.disabled = false;
+            displayType.disabled = false;
+            networkOnline.disabled = false;
+            btnSaveConfig.disabled = false;
+            btnSaveLocation.disabled = false;
+            btnSaveOpenSky.disabled = false;
+            btnTriggerSync.disabled = false;
+            btnSaveDeviceSettings.disabled = false;
+            btnSaveTheme.disabled = false;
+            btnSendRadar.disabled = false;
+            btnAutoSim.disabled = false;
+            btnSendRaw.disabled = false;
+            rawCommand.disabled = false;
+            btnCitySearch.disabled = false;
+            btnBrowserLocation.disabled = false;
+            citySearch.disabled = false;
+            themeId.disabled = false;
+            bootText.disabled = false;
+            ledBrightness.disabled = false;
+            ledColor.disabled = false;
+            buzzerVolume.disabled = false;
+            beepBoot.disabled = false;
+            beepConfig.disabled = false;
+            beepTheme.disabled = false;
+            beepFlight.disabled = false;
+            btnSaveAudio.disabled = false;
+
+            logConsole('Serial port connected. Requesting device status...', 'info');
+
+            // Two-way sync: ask device for current settings
+            setTimeout(() => sendSerial('GET_STATUS'), 800);
+
+            // Auto sync time once on connection
+            // Periodically syncing time is removed to keep local serial messages clean.
+
+            // Update polling status badge
+            document.getElementById('pollingStatus').className = 'idle';
+            document.getElementById('pollingText').innerText = 'Polling: 3 min (idle)';
+        }
+
+        // Set UI to Disconnected
+        function setDisconnectedUI() {
+            btnConnect.innerHTML = '<i class="fa-solid fa-plug"></i> Connect Device';
+            btnConnect.className = "btn btn-outline";
+            statusDot.className = "status-dot";
+            statusText.innerText = "Disconnected";
+
+            // Disable inputs
+            wifiSsid.disabled = true;
+            wifiPass.disabled = true;
+            homeLat.disabled = true;
+            homeLon.disabled = true;
+            displayType.disabled = true;
+            networkOnline.disabled = true;
+            btnSaveConfig.disabled = true;
+            btnSaveLocation.disabled = true;
+            btnSaveOpenSky.disabled = true;
+            btnTriggerSync.disabled = true;
+            btnSaveDeviceSettings.disabled = true;
+            btnSaveTheme.disabled = true;
+            btnSendRadar.disabled = true;
+            btnAutoSim.disabled = true;
+            btnSendRaw.disabled = true;
+            rawCommand.disabled = true;
+            btnCitySearch.disabled = true;
+            btnBrowserLocation.disabled = true;
+            citySearch.disabled = true;
+            themeId.disabled = true;
+            bootText.disabled = true;
+            ledBrightness.disabled = true;
+            ledColor.disabled = true;
+            buzzerVolume.disabled = true;
+            beepBoot.disabled = true;
+            beepConfig.disabled = true;
+            beepTheme.disabled = true;
+            beepFlight.disabled = true;
+            btnSaveAudio.disabled = true;
+
+            port = null;
+            reader = null;
+
+            if (simInterval) {
+                clearInterval(simInterval);
+                simInterval = null;
+                btnAutoSim.innerHTML = '<i class="fa-solid fa-circle-play"></i> Start Orbit Sim';
+                btnAutoSim.className = "btn btn-outline";
+            }
+
+            // Clear time sync interval
+            if (timeSyncInterval) {
+                clearInterval(timeSyncInterval);
+                timeSyncInterval = null;
+            }
+
+            logConsole('Serial port disconnected.', 'info');
+        }
+
+        // Loop to continuously read from the Serial line
+        async function readLoop() {
+            const textDecoder = new TextDecoderStream();
+            const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+            reader = textDecoder.readable.getReader();
+
+            let accumulatedString = "";
+
+            try {
+                while (keepReading) {
+                    const { value, done } = await reader.read();
+                    if (done) {
+                        break;
+                    }
+                    if (value) {
+                        accumulatedString += value;
+                        if (accumulatedString.includes('\n')) {
+                            const lines = accumulatedString.split('\n');
+                            accumulatedString = lines.pop();
+
+                            for (const line of lines) {
+                                const trimmed = line.trim();
+                                if (trimmed.length > 0) {
+                                    logConsole(trimmed, 'rx');
+                                    // Two-way sync: parse GET_STATUS JSON response
+                                    if (trimmed.startsWith('{"status":"OK"')) {
+                                        try { applyDeviceStatus(JSON.parse(trimmed)); }
+                                        catch (e) { logConsole('Status parse error: ' + e.message, 'error'); }
+                                    }
+                                    // Update polling indicator when planes found
+                                    if (trimmed.includes('"plane_count"')) {
+                                        try {
+                                            const j = JSON.parse(trimmed);
+                                            if (j.plane_count > 0) {
+                                                document.getElementById('pollingStatus').className = 'active';
+                                                document.getElementById('pollingText').innerText = `Polling: 15s (${j.plane_count} plane${j.plane_count > 1 ? 's' : ''})`;
+                                            } else {
+                                                document.getElementById('pollingStatus').className = 'idle';
+                                                document.getElementById('pollingText').innerText = 'Polling: 3 min (idle)';
+                                            }
+                                        } catch (e) { }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (err) {
+                logConsole(`Read Error: ${err.message}`, 'error');
+            } finally {
+                reader.releaseLock();
+            }
+        }
+
+        // Send a string to the Serial port
+        async function sendSerial(command) {
+            if (!port || !port.writable) {
+                logConsole('Serial port is not writable.', 'error');
+                return;
+            }
+            const writer = port.writable.getWriter();
+            const textEncoder = new TextEncoder();
+            const fullCommand = command.endsWith('\n') ? command : command + '\n';
+
+            try {
+                await writer.write(textEncoder.encode(fullCommand));
+                logConsole(fullCommand.trim(), 'tx');
+            } catch (err) {
+                logConsole(`Write Error: ${err.message}`, 'error');
+            } finally {
+                writer.releaseLock();
+            }
+        }
+
+        // Send WiFi Credentials and Coordinates Config
+        btnSaveConfig.addEventListener('click', () => {
+            const ssid = wifiSsid.value;
+            const pass = wifiPass.value;
+            const lat = parseFloat(homeLat.value).toFixed(4);
+            const lon = parseFloat(homeLon.value).toFixed(4);
+            const disp = displayType.value;
+
+            if (!ssid) {
+                alert('Please enter a WiFi SSID.');
+                return;
+            }
+
+            // Save Fetch Mode settings first
+            saveDeviceSettings();
+
+            // Send WiFi and Display Config and reboot after a short delay
+            setTimeout(() => {
+                const cmd = `CONFIG,${ssid},${pass},${lat},${lon},${disp}`;
+                sendSerial(cmd);
+            }, 250);
+        });
+
+        // Save Home Location Settings (Coordinates Only, No Reboot)
+        btnSaveLocation.addEventListener('click', () => {
+            const lat = parseFloat(homeLat.value).toFixed(4);
+            const lon = parseFloat(homeLon.value).toFixed(4);
+            sendSerial(`SET_LOCATION,${lat},${lon}`);
+        });
+
+        // Trigger manual OpenSky sync from controller
+        function triggerOskySync() {
+            sendSerial('TRIGGER_SYNC');
+            logConsole('Requested manual OpenSky sync...', 'info');
+            setTimeout(() => {
+                sendSerial('GET_STATUS');
+            }, 500);
+        }
+
+        // Save Clock & Admin Settings
+        btnSaveDeviceSettings.addEventListener('click', () => {
+            saveDeviceSettings();
+        });
+
+        // Send Custom Layout Theme & LED Settings
+        btnSaveTheme.addEventListener('click', () => {
+            const theme = parseInt(themeId.value);
+            const boot = bootText.value.trim();
+            const bright = parseInt(ledBrightness.value);
+            const mode = 1;
+
+            const hex = ledColor.value;
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+
+            if (!boot) {
+                alert('Please enter a Boot Text.');
+                return;
+            }
+
+            // Apply layout settings via SETTINGS command first
+            saveDeviceSettings();
+
+            // SET_THEME: theme id + boot text
+            setTimeout(() => sendSerial(`SET_THEME,${theme},${boot}`), 100);
+            // SET_LED: mode, brightness, rgb
+            setTimeout(() => sendSerial(`SET_LED,${mode},${bright},${r},${g},${b}`), 250);
+        });
+
+        // Send Custom Audio Preference Settings
+        btnSaveAudio.addEventListener('click', () => {
+            const vol = parseInt(buzzerVolume.value);
+            const sound = document.getElementById('settingSound').checked ? 1 : 0;
+            const mute = 1 - sound;
+            const boot = parseInt(beepBoot.value);
+            const conf = parseInt(beepConfig.value);
+            const theme = parseInt(beepTheme.value);
+            const flight = parseInt(beepFlight.value);
+
+            // Also call saveDeviceSettings to update sound_enabled and hourly chime
+            saveDeviceSettings();
+
+            // Send audio config command
+            setTimeout(() => {
+                const cmd = `SET_AUDIO,${vol},${mute},${boot},${conf},${theme},${flight}`;
+                sendSerial(cmd);
+            }, 150);
+        });
+
+        // Send Radar Telemetry
+        btnSendRadar.addEventListener('click', () => {
+            sendCurrentRadarTelemetry();
+        });
+
+        function sendCurrentRadarTelemetry() {
+            const callsign = planeCallsign.value.trim().toUpperCase();
+            const lat = parseFloat(planeLat.value).toFixed(4);
+            const lon = parseFloat(planeLon.value).toFixed(4);
+            const heading = parseInt(planeHeading.value);
+            const alt = parseInt(planeAlt.value);
+            const speed = parseInt(planeSpeed.value);
+
+            const cmd = `RADAR,${lat},${lon},${callsign},${heading},${alt},${speed}`;
+            sendSerial(cmd);
+
+            // Update red plane on Leaflet map in real-time
+            updatePlaneMarker(parseFloat(lat), parseFloat(lon), heading, callsign, alt, speed);
+        }
+
+        // Simulated Automatic Flight Path
+        btnAutoSim.addEventListener('click', () => {
+            if (simInterval) {
+                clearInterval(simInterval);
+                simInterval = null;
+                btnAutoSim.innerHTML = '<i class="fa-solid fa-circle-play"></i> Start Orbit Sim';
+                btnAutoSim.className = "btn btn-outline";
+                logConsole("Auto simulation stopped.", "info");
+            } else {
+                simAngle = 0;
+                btnAutoSim.innerHTML = '<i class="fa-solid fa-circle-pause"></i> Pause Orbit Sim';
+                btnAutoSim.className = "btn btn-danger";
+                logConsole("Auto simulation started. Telemetry streaming every 3 seconds.", "info");
+
+                executeSimStep();
+
+                simInterval = setInterval(() => {
+                    executeSimStep();
+                }, 3000);
+            }
+        });
+
+        function executeSimStep() {
+            const hPos = homeMarker ? homeMarker.getLatLng() : { lat: parseFloat(homeLat.value), lng: parseFloat(homeLon.value) };
+            const r = 0.3;
+
+            simAngle = (simAngle + 10) % 360;
+
+            const rad = simAngle * Math.PI / 180;
+            const newLat = hPos.lat + r * Math.sin(rad);
+            const newLon = hPos.lng + r * Math.cos(rad);
+
+            planeLat.value = newLat.toFixed(4);
+            planeLon.value = newLon.toFixed(4);
+
+            const heading = (simAngle + 90) % 360;
+            planeHeading.value = Math.round(heading);
+
+            planeAlt.value = Math.round(30000 + 2000 * Math.sin(rad * 3));
+
+            sendCurrentRadarTelemetry();
+        }
+
+        // Send raw custom user commands
+        btnSendRaw.addEventListener('click', () => {
+            const cmd = rawCommand.value.trim();
+            if (cmd.length > 0) {
+                sendSerial(cmd);
+                rawCommand.value = '';
+            }
+        });
+
+        rawCommand.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                btnSendRaw.click();
+            }
+        });
+
+        // Add message to local console
+        function logConsole(message, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+
+            const line = document.createElement('div');
+            line.className = 'console-line';
+
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'console-time';
+            timeSpan.innerText = `[${time}]`;
+
+            const msgSpan = document.createElement('span');
+            msgSpan.className = `console-msg ${type}`;
+
+            let prefix = "";
+            if (type === 'tx') prefix = "→ OUT: ";
+            if (type === 'rx') prefix = "← IN:  ";
+            if (type === 'error') prefix = "⚠ ERROR: ";
+
+            msgSpan.innerText = prefix + message;
+
+            line.appendChild(timeSpan);
+            line.appendChild(msgSpan);
+
+            // Append to main console if exists
+            if (consoleContainer) {
+                const clone = line.cloneNode(true);
+                consoleContainer.appendChild(clone);
+                consoleContainer.scrollTop = consoleContainer.scrollHeight;
+            }
+
+            // Append to simulator console if exists
+            const simConsole = document.getElementById('simConsole');
+            if (simConsole) {
+                simConsole.appendChild(line);
+                simConsole.scrollTop = simConsole.scrollHeight;
+            }
+        }
+
+        // Simple City Preset Lookup
+        btnCitySearch.addEventListener('click', () => {
+            const query = citySearch.value.trim().toLowerCase();
+            if (query.length === 0) return;
+
+            const presets = {
+                'thrissur': { lat: 10.5276, lon: 76.2144, label: 'Thrissur, Kerala, India' },
+                'kochi': { lat: 9.9312, lon: 76.2673, label: 'Kochi, Kerala, India' },
+                'bangalore': { lat: 12.9716, lon: 77.5946, label: 'Bangalore, India' },
+                'mumbai': { lat: 19.0760, lon: 72.8777, label: 'Mumbai, India' },
+                'london': { lat: 51.5074, lon: -0.1278, label: 'London, UK' },
+                'new york': { lat: 40.7128, lon: -74.0060, label: 'New York, USA' },
+                'tokyo': { lat: 35.6762, lon: 139.6503, label: 'Tokyo, Japan' },
+                'sydney': { lat: -33.8688, lon: 151.2093, label: 'Sydney, Australia' },
+                'paris': { lat: 48.8566, lon: 2.3522, label: 'Paris, France' },
+                'singapore': { lat: 1.3521, lon: 103.8198, label: 'Singapore' }
+            };
+
+            let found = null;
+            for (const key in presets) {
+                if (key.includes(query) || query.includes(key)) {
+                    found = presets[key];
+                    break;
+                }
+            }
+
+            if (found) {
+                setHomeCoordinates(found.lat, found.lon, found.label);
+                citySearchStatus.innerText = `Loaded preset: ${found.label}`;
+                citySearchStatus.style.color = 'var(--primary)';
+            } else {
+                citySearchStatus.innerText = 'City not found in presets. Drag home marker manually.';
+                citySearchStatus.style.color = 'var(--danger)';
+            }
+        });
+
+        citySearch.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') btnCitySearch.click();
+        });
+
+        // Use Browser Geolocation to find coordinates
+        function useBrowserLocation() {
+            const statusEl = document.getElementById('citySearchStatus');
+            if (!navigator.geolocation) {
+                if (statusEl) statusEl.innerText = "Geolocation is not supported by your browser.";
+                logConsole("Geolocation is not supported by this browser.", "error");
+                return;
+            }
+
+            if (statusEl) {
+                statusEl.innerText = "Requesting browser location access...";
+                statusEl.style.color = "var(--primary)";
+            }
+            logConsole("Requesting GPS coordinates via browser Geolocation API...", "info");
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    const latStr = lat.toFixed(4);
+                    const lonStr = lon.toFixed(4);
+
+                    document.getElementById('homeLat').value = latStr;
+                    document.getElementById('homeLon').value = lonStr;
+
+                    const newPos = new L.LatLng(lat, lon);
+                    if (homeMarker) homeMarker.setLatLng(newPos);
+                    if (rangeCircle) rangeCircle.setLatLng(newPos);
+                    if (map) map.panTo(newPos);
+
+                    updateSmallMapPosition(lat, lon);
+                    updateAirportMarkers(lat, lon);
+
+                    if (statusEl) {
+                        statusEl.innerText = `Located GPS coordinates: ${latStr}, ${lonStr}`;
+                        statusEl.style.color = "#22c55e";
+                    }
+
+                    logConsole(`GPS Coordinates loaded: ${latStr}, ${lonStr}`, 'info');
+
+                    // Auto-sync coordinates to device in real-time
+                    sendSerial(`SET_LOCATION,${latStr},${lonStr}`);
+                },
+                (error) => {
+                    let errMsg = "Unknown geolocation error.";
+                    if (error.code === error.PERMISSION_DENIED) {
+                        errMsg = "Location access denied by user.";
+                    } else if (error.code === error.POSITION_UNAVAILABLE) {
+                        errMsg = "Location information is unavailable.";
+                    } else if (error.code === error.TIMEOUT) {
+                        errMsg = "Location request timed out.";
+                    }
+                    if (statusEl) {
+                        statusEl.innerText = errMsg;
+                        statusEl.style.color = "var(--danger)";
+                    }
+                    logConsole(`Geolocation failed: ${errMsg}`, 'error');
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 8000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        // ======================================================
+        // PASSWORD GATE
+        // ======================================================
+        function attemptLogin() {
+            const input = document.getElementById('loginPassword').value;
+            if (input === syncedWebPassword) {
+                isUnlocked = true;
+                document.getElementById('loginGate').style.display = 'none';
+
+                const targetTab = window.pendingTabId || 'controller';
+                switchTab(targetTab);
+
+                if (!map && targetTab === 'radarsim') {
+                    initMap();
+                }
+                if (!smallMap && targetTab === 'controller') {
+                    initSmallMap();
+                }
+            } else {
+                document.getElementById('loginErr').style.display = 'block';
+                document.getElementById('loginPassword').value = '';
+            }
+        }
+        document.getElementById('loginPassword').addEventListener('keydown', e => {
+            if (e.key === 'Enter') attemptLogin();
+        });
+
+        // ======================================================
+        // TWO-WAY SYNC: Apply GET_STATUS JSON response to UI
+        // ======================================================
+        function applyDeviceStatus(j) {
+            if (j.ssid) wifiSsid.value = j.ssid;
+            if (j.password !== undefined) wifiPass.value = j.password;
+            if (j.lat) homeLat.value = j.lat;
+            if (j.lon) homeLon.value = j.lon;
+            if (j.network_online !== undefined) networkOnline.value = j.network_online;
+            if (j.theme !== undefined) themeId.value = j.theme;
+            if (j.boot_text) bootText.value = j.boot_text;
+            if (j.display_type !== undefined) displayType.value = j.display_type;
+            if (j.led_brightness !== undefined) ledBrightness.value = j.led_brightness;
+            if (j.buzzer_volume !== undefined) buzzerVolume.value = j.buzzer_volume;
+            if (j.buzzer_mute !== undefined) {
+                const sndEl = document.getElementById('settingSound');
+                if (sndEl) sndEl.checked = (j.buzzer_mute === 0);
+            }
+            if (j.beep_boot !== undefined) beepBoot.value = j.beep_boot;
+            if (j.beep_config !== undefined) beepConfig.value = j.beep_config;
+            if (j.beep_theme !== undefined) beepTheme.value = j.beep_theme;
+            if (j.beep_flight !== undefined) beepFlight.value = j.beep_flight;
+
+            // OpenSky credentials
+            if (j.opensky_user !== undefined) document.getElementById('oskyUser').value = j.opensky_user;
+            if (j.opensky_pass !== undefined) document.getElementById('oskyPass').value = j.opensky_pass;
+
+            // LED color
+            if (j.led_r !== undefined && j.led_g !== undefined && j.led_b !== undefined) {
+                const hex = '#' +
+                    j.led_r.toString(16).padStart(2, '0') +
+                    j.led_g.toString(16).padStart(2, '0') +
+                    j.led_b.toString(16).padStart(2, '0');
+                if (ledColor) { ledColor.value = hex; ledColorHex.innerText = hex; }
+            }
+
+            // Device settings
+            const sndEl = document.getElementById('settingSound');
+            if (sndEl && j.sound_enabled !== undefined) sndEl.checked = (j.sound_enabled === 1);
+            const sndByEl = document.getElementById('settingSoundBy');
+            if (sndByEl && j.sound_bypass !== undefined) sndByEl.checked = (j.sound_bypass === 1);
+            const ledEnEl = document.getElementById('settingLedEn');
+            if (ledEnEl && j.led_enabled !== undefined) ledEnEl.checked = (j.led_enabled === 1);
+            const ledByEl = document.getElementById('settingLedBy');
+            if (ledByEl && j.led_bypass !== undefined) ledByEl.checked = (j.led_bypass === 0);
+            const invertEl = document.getElementById('settingInvert');
+            if (invertEl && j.display_invert !== undefined) invertEl.checked = (j.display_invert === 1);
+            const clkEl = document.getElementById('settingClk12');
+            if (clkEl && j.time_format_12h !== undefined) clkEl.checked = (j.time_format_12h === 1);
+            const city2El = document.getElementById('settingCity2');
+            if (city2El && j.world_clock_city !== undefined) city2El.value = j.world_clock_city;
+            const chimeEl = document.getElementById('settingChime');
+            if (chimeEl && j.hourly_chime !== undefined) chimeEl.checked = (j.hourly_chime === 1);
+
+            // Timezone & Password settings sync
+            const tzEl = document.getElementById('settingTzOffset');
+            if (tzEl && j.timezone_offset_min !== undefined) tzEl.value = j.timezone_offset_min;
+            const localCityEl = document.getElementById('settingLocalCity');
+            if (localCityEl && j.local_city) localCityEl.value = j.local_city;
+            const webPwEl = document.getElementById('settingWebPassword');
+            if (webPwEl && j.web_password) {
+                webPwEl.value = j.web_password;
+                syncedWebPassword = j.web_password;
+            }
+
+            // Update home marker position
+            if (j.lat && j.lon) {
+                const lat = parseFloat(j.lat);
+                const lon = parseFloat(j.lon);
+                const pos = new L.LatLng(lat, lon);
+                if (homeMarker) {
+                    homeMarker.setLatLng(pos);
+                    rangeCircle.setLatLng(pos);
+                    map.panTo(pos);
+                }
+                updateSmallMapPosition(lat, lon);
+            }
+
+            // Update OpenSky network card status elements
+            const wifiConnected = j.wifi_connected === 1;
+            const oskyWifiEl = document.getElementById('oskyWifiStatus');
+            const oskyApiEl = document.getElementById('oskyApiStatus');
+            const oskySyncEl = document.getElementById('oskyLastSync');
+
+            if (oskyWifiEl) {
+                if (wifiConnected) {
+                    oskyWifiEl.innerText = "Connected";
+                    oskyWifiEl.style.color = "#22c55e";
+                } else {
+                    oskyWifiEl.innerText = "Offline (No WiFi)";
+                    oskyWifiEl.style.color = "var(--danger)";
+                }
+            }
+
+            if (oskyApiEl) {
+                if (j.network_online === 0) {
+                    oskyApiEl.innerText = "Disabled (USB Mode)";
+                    oskyApiEl.style.color = "var(--danger)";
+                } else if (!wifiConnected) {
+                    oskyApiEl.innerText = "Waiting for WiFi";
+                    oskyApiEl.style.color = "var(--text-muted)";
+                } else {
+                    if (j.opensky_code === 200) {
+                        oskyApiEl.innerText = "Connected (200 OK)";
+                        oskyApiEl.style.color = "#22c55e";
+                    } else if (j.opensky_code === 401) {
+                        oskyApiEl.innerText = "Unauthorized (401 Error)";
+                        oskyApiEl.style.color = "var(--danger)";
+                    } else if (j.opensky_code === 429) {
+                        oskyApiEl.innerText = "Rate Limited (429 Error)";
+                        oskyApiEl.style.color = "var(--primary)";
+                    } else if (j.opensky_code === 0) {
+                        oskyApiEl.innerText = "Idle (Waiting first query)";
+                        oskyApiEl.style.color = "var(--text-muted)";
+                    } else {
+                        oskyApiEl.innerText = `HTTP Error ${j.opensky_code}`;
+                        oskyApiEl.style.color = "var(--danger)";
+                    }
+                }
+            }
+
+            if (oskySyncEl) {
+                if (j.opensky_sync_age !== undefined) {
+                    const age = j.opensky_sync_age;
+                    if (age < 0) {
+                        oskySyncEl.innerText = "Never";
+                        oskySyncEl.style.color = "var(--text-muted)";
+                    } else if (age < 60) {
+                        oskySyncEl.innerText = `${age}s ago`;
+                        oskySyncEl.style.color = "#22c55e";
+                    } else {
+                        const mins = Math.floor(age / 60);
+                        oskySyncEl.innerText = `${mins}m ago`;
+                        oskySyncEl.style.color = "var(--primary)";
+                    }
+                }
+            }
+
+            logConsole(`Device status synced: SSID=${j.ssid || 'N/A'}, ${j.plane_count} plane(s)`, 'info');
+
+            // Render API statistics
+            const apiCountEl = document.getElementById('apiDailyCount');
+            const apiTsEl = document.getElementById('apiLastCallTs');
+            const apiLeftEl = document.getElementById('apiCallsLeft');
+
+            if (apiCountEl && j.api_daily_count !== undefined) {
+                apiCountEl.innerText = j.api_daily_count;
+            }
+            if (apiTsEl && j.api_last_call_ts !== undefined) {
+                apiTsEl.innerText = j.api_last_call_ts;
+            }
+            if (apiLeftEl) {
+                const hasCreds = j.opensky_user && j.opensky_user.trim().length > 0;
+                const limit = hasCreds ? 4000 : 400;
+                let left;
+                if (j.opensky_limit_remaining !== undefined && j.opensky_limit_remaining >= 0) {
+                    left = j.opensky_limit_remaining;
+                } else if (j.api_daily_count !== undefined) {
+                    left = limit - j.api_daily_count;
+                }
+
+                if (left !== undefined) {
+                    if (left < 0) left = 0;
+                    apiLeftEl.innerText = `${left} / ${limit}`;
+
+                    if (left < limit * 0.1) {
+                        apiLeftEl.style.color = "var(--danger)";
+                    } else if (left < limit * 0.3) {
+                        apiLeftEl.style.color = "var(--primary)";
+                    } else {
+                        apiLeftEl.style.color = "#22c55e";
+                    }
+                }
+            }
+
+            // Sync slider range settings from device status
+            if (j.radar_range_km !== undefined) {
+                const mainSlider = document.getElementById('radarRangeSlider');
+                const mainValDisp = document.getElementById('radarRangeVal');
+                const smallSlider = document.getElementById('smallRadarRangeSlider');
+                const smallValDisp = document.getElementById('smallRadarRangeVal');
+
+                if (mainSlider) mainSlider.value = j.radar_range_km;
+                if (mainValDisp) mainValDisp.innerText = j.radar_range_km;
+                if (smallSlider) smallSlider.value = j.radar_range_km;
+                if (smallValDisp) smallValDisp.innerText = j.radar_range_km;
+
+                if (rangeCircle) rangeCircle.setRadius(j.radar_range_km * 1000);
+                if (smallRangeCircle) smallRangeCircle.setRadius(j.radar_range_km * 1000);
+            }
+
+        }
+
+
+
+        // Save Device Settings card
+        function saveDeviceSettings() {
+            const sound = document.getElementById('settingSound') ? (document.getElementById('settingSound').checked ? 1 : 0) : 1;
+            const ledEn = document.getElementById('settingLedEn') ? (document.getElementById('settingLedEn').checked ? 1 : 0) : 1;
+            const invert = document.getElementById('settingInvert') ? (document.getElementById('settingInvert').checked ? 1 : 0) : 0;
+            const clk12 = document.getElementById('settingClk12') ? (document.getElementById('settingClk12').checked ? 1 : 0) : 0;
+            const city2 = document.getElementById('settingCity2') ? parseInt(document.getElementById('settingCity2').value) : 0;
+            const chime = document.getElementById('settingChime') ? (document.getElementById('settingChime').checked ? 1 : 0) : 0;
+            const tz = document.getElementById('settingTzOffset') ? parseInt(document.getElementById('settingTzOffset').value) : 330;
+            const lcity = document.getElementById('settingLocalCity') ? document.getElementById('settingLocalCity').value.trim() : "Thrissur";
+            const pw = document.getElementById('settingWebPassword') ? document.getElementById('settingWebPassword').value.trim() : "admin";
+            const netOn = document.getElementById('networkOnline') ? parseInt(document.getElementById('networkOnline').value) : 1;
+            const radR = document.getElementById('radarRangeSlider') ? parseInt(document.getElementById('radarRangeSlider').value) : 50;
+            const ledBy = document.getElementById('settingLedBy') ? (document.getElementById('settingLedBy').checked ? 0 : 1) : 0;
+            const sndBy = document.getElementById('settingSoundBy') ? (document.getElementById('settingSoundBy').checked ? 1 : 0) : 0;
+
+            sendSerial(`SETTINGS,${sound},${ledEn},${invert},${clk12},${city2},${chime},${tz},${lcity},${pw},${netOn},${radR},${ledBy},${sndBy}`);
+        }
+
+        // Save OpenSky credentials
+        function saveOpenSkyCredentials() {
+            const user = (document.getElementById('oskyUser') || { value: '' }).value.trim();
+            const pass = (document.getElementById('oskyPass') || { value: '' }).value.trim();
+            sendSerial(`SET_OPENSKY,${user},${pass}`);
+        }
+
+        // Factory Reset
+        function sendFactoryReset() {
+            if (!confirm('This will erase all NVS settings and reboot the device. Continue?')) return;
+            sendSerial('FACTORY_RESET');
+        }
+
+        // ======================================================
+        // POST-FLASH CONFIGURATION MODAL LOGIC
+        // ======================================================
+        async function savePostFlashConfig() {
+            const dispType = document.getElementById('modalDisplayType').value;
+            const ssid = document.getElementById('modalWifiSsid').value.trim();
+            const pass = document.getElementById('modalWifiPass').value.trim();
+
+            try {
+                const normalPort = await navigator.serial.requestPort();
+                await normalPort.open({ baudRate: 115200 });
+
+                const writer = normalPort.writable.getWriter();
+                const encoder = new TextEncoder();
+
+                // Allow device 1.2s to boot up and initialize serial stack
+                await new Promise(r => setTimeout(r, 1200));
+
+                // Send CONFIG Command: CONFIG,<SSID>,<PASSWORD>,<LAT>,<LON>,<DISPLAY_TYPE>
+                const cmd = `CONFIG,${ssid},${pass},10.5200,76.2100,${dispType}\n`;
+                await writer.write(encoder.encode(cmd));
+
+                writer.releaseLock();
+                await normalPort.close();
+
+                // Hide modal
+                document.getElementById('configModal').style.display = 'none';
+                alert('Device configured successfully! OLED display should activate in a few seconds.');
+            } catch (err) {
+                alert('Configuration failed: ' + err.message + '\nYou can also configure it from the Web Controller tab.');
+                document.getElementById('configModal').style.display = 'none';
+            }
+        }
+
+        async function skipPostFlashConfig() {
+            const dispType = document.getElementById('modalDisplayType').value;
+
+            try {
+                const normalPort = await navigator.serial.requestPort();
+                await normalPort.open({ baudRate: 115200 });
+
+                const writer = normalPort.writable.getWriter();
+                const encoder = new TextEncoder();
+
+                await new Promise(r => setTimeout(r, 1200));
+
+                // Send CONFIG Command with empty WiFi
+                const cmd = `CONFIG,,,10.5200,76.2100,${dispType}\n`;
+                await writer.write(encoder.encode(cmd));
+
+                writer.releaseLock();
+                await normalPort.close();
+
+                document.getElementById('configModal').style.display = 'none';
+                alert('Display configured successfully! OLED display should activate in a few seconds.');
+            } catch (err) {
+                alert('Configuration failed: ' + err.message);
+                document.getElementById('configModal').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>
