@@ -372,6 +372,39 @@
             grid-column: span 2;
         }
 
+        .json-drop-zone {
+            border: 2px dashed var(--card-border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            text-align: center;
+            background: rgba(255, 122, 0, 0.02);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            gap: 0.5rem;
+        }
+
+        .json-drop-zone i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .json-drop-zone:hover,
+        .json-drop-zone.dragover {
+            border-color: var(--primary);
+            background: rgba(255, 122, 0, 0.08);
+            color: var(--text-color);
+        }
+
+        .json-drop-zone strong {
+            color: var(--primary);
+        }
+
         label {
             font-size: 0.75rem;
             font-weight: 600;
@@ -823,8 +856,7 @@
     <!-- File Warning Banner -->
     <div id="fileProtocolWarning" class="warning-banner">
         <i class="fa-solid fa-triangle-exclamation"></i>
-        <span><strong>Web Serial disabled:</strong> Running directly via <code>file://</code> protocol blocks browser
-            Web Serial. Please host this page on an HTTPS server (like GitHub Pages) to connect.</span>
+        <span><strong>Web Serial unsupported:</strong> Your browser does not support the Web Serial API. Please use a compatible browser such as Google Chrome or Microsoft Edge.</span>
     </div>
 
     <!-- Tabs Navigation -->
@@ -918,8 +950,15 @@
                 button below to connect your device and begin.
             </p>
 
-            <div style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
-                <esp-web-install-button manifest="firmware/manifest.json"></esp-web-install-button>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem; margin-bottom: 2rem;">
+                <div class="form-group" style="width: 100%; max-width: 320px; text-align: left;">
+                    <label for="flasherDisplayType" style="margin-bottom: 0.5rem; display: block; font-weight: 600; font-size: 0.85rem; color: var(--text-color);">OLED Display Type</label>
+                    <select id="flasherDisplayType" style="width: 100%; font-size: 0.9rem; background: rgba(255,255,255,0.03); color: var(--text-color); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 0.5rem 0.75rem; cursor: pointer; outline: none; transition: border-color 0.2s;">
+                        <option value="ssd1306" selected>SSD1306 OLED (0.96" standard)</option>
+                        <option value="sh110x">SH110X OLED (1.3" standard)</option>
+                    </select>
+                </div>
+                <esp-web-install-button manifest="firmware/manifest_ssd1306.json"></esp-web-install-button>
             </div>
 
             <div class="alert-olo"
@@ -989,6 +1028,15 @@
                     </div>
 
                     <div class="form-grid" style="margin-bottom: 1rem;">
+                        <div class="form-group full-width" style="margin-bottom: 0.5rem; grid-column: span 2;">
+                            <label>Upload Credentials JSON</label>
+                            <div id="jsonDropZone" class="json-drop-zone">
+                                <i class="fa-solid fa-file-import"></i>
+                                <span>Drag &amp; drop <strong>credentials.json</strong> here or click to browse</span>
+                                <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
+                            </div>
+                        </div>
+
                         <div class="form-group">
                             <label for="oskyUser">Client ID / Username</label>
                             <input type="text" id="oskyUser" placeholder="Client ID / username">
@@ -1049,6 +1097,20 @@
                         <div class="form-group">
                             <label for="homeLon">Home Longitude</label>
                             <input type="number" id="homeLon" step="0.0001" value="76.2100">
+                        </div>
+
+                        <div class="form-group full-width" style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--card-border); padding-top: 0.75rem; margin-top: 0.5rem; grid-column: span 2;">
+                            <div>
+                                <span style="font-size: 0.85rem; color: var(--text-color); font-weight: 600;">Live Radar Tracking Radius</span>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Select boundary radius for live fetches</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <span id="liveRangeLabel" style="font-weight: 600; color: var(--primary); font-size: 0.85rem;">10 km</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="liveRangeToggle">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
                         </div>
 
                         <button id="btnSaveLocation" class="btn full-width"
@@ -1122,18 +1184,13 @@
                         <div
                             style="display: flex; flex-direction: column; gap: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.75rem;">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-size: 0.85rem; color: var(--text-color);">LED Global Power</span>
-                                <label class="switch">
-                                    <input type="checkbox" id="settingLedEn" checked>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-size: 0.85rem; color: var(--text-color);">LED Notification Mode</span>
-                                <label class="switch">
-                                    <input type="checkbox" id="settingLedBy">
-                                    <span class="slider"></span>
-                                </label>
+                                <span style="font-size: 0.85rem; color: var(--text-color);">LED Mode / Effect</span>
+                                <select id="settingLedMode" style="width: 180px; padding: 0.375rem 0.5rem; background: rgba(0,0,0,0.5); border: 1px solid var(--card-border); border-radius: 6px; color: white; outline: none; font-family: var(--font-main);">
+                                    <option value="off">Off</option>
+                                    <option value="notif">Notification Only</option>
+                                    <option value="solid">Manual - Solid</option>
+                                    <option value="breath">Manual - Breathing</option>
+                                </select>
                             </div>
                             <div style="display: flex; justify-content: space-between; align-items: center;">
                                 <span style="font-size: 0.85rem; color: var(--text-color);">Invert Screen Colors</span>
@@ -1369,6 +1426,11 @@
                                     placeholder="New login password">
                             </div>
 
+                            <div class="form-group">
+                                <label for="settingSleepTimeout">Screensaver Timeout: <span id="sleepTimeoutVal" style="color: var(--primary); font-weight: 600;">5</span> min</label>
+                                <input type="range" id="settingSleepTimeout" min="5" max="30" step="1" value="5" style="width: 100%; cursor: pointer; accent-color: var(--primary);">
+                            </div>
+
                             <div style="display: flex; gap: 0.75rem; grid-column: span 2; margin-top: 0.5rem;">
                                 <button id="btnSaveDeviceSettings" class="btn" style="flex: 1;" disabled>
                                     <i class="fa-solid fa-floppy-disk"></i> Save Clock &amp; Admin
@@ -1587,6 +1649,7 @@
         let port;
         let reader;
         let keepReading = true;
+        let readPromise = null;
         let timeSyncInterval = null;
 
         // --- Simulated flight path timer ---
@@ -1670,8 +1733,6 @@
             if (!("serial" in navigator)) {
                 document.getElementById('fileProtocolWarning').style.display = 'flex';
                 btnConnect.disabled = true;
-            } else if (window.location.protocol === 'file:') {
-                document.getElementById('fileProtocolWarning').style.display = 'flex';
             }
 
             // Sync LED color picker text on input
@@ -1689,9 +1750,17 @@
                 });
             }
 
-            // Hook up synchronized range sliders
+            const flasherDisp = document.getElementById('flasherDisplayType');
+            if (flasherDisp && installBtn) {
+                flasherDisp.addEventListener('change', () => {
+                    const dispVal = flasherDisp.value;
+                    installBtn.setAttribute('manifest', `firmware/manifest_${dispVal}.json`);
+                });
+            }
+
+            // Hook up range slider and toggle switch
             const mainSlider = document.getElementById('radarRangeSlider');
-            const smallSlider = document.getElementById('smallRadarRangeSlider');
+            const liveRangeToggle = document.getElementById('liveRangeToggle');
 
             if (mainSlider) {
                 mainSlider.addEventListener('input', () => {
@@ -1702,11 +1771,21 @@
                 });
             }
 
-            if (smallSlider) {
-                smallSlider.addEventListener('input', () => {
-                    syncSliders(parseInt(smallSlider.value));
+            if (liveRangeToggle) {
+                liveRangeToggle.addEventListener('change', () => {
+                    const radius = liveRangeToggle.checked ? 20 : 10;
+                    syncSliders(radius);
+                    saveDeviceSettings();
                 });
-                smallSlider.addEventListener('change', () => {
+            }
+
+            const sleepTimeoutEl = document.getElementById('settingSleepTimeout');
+            const sleepTimeoutVal = document.getElementById('sleepTimeoutVal');
+            if (sleepTimeoutEl && sleepTimeoutVal) {
+                sleepTimeoutEl.addEventListener('input', () => {
+                    sleepTimeoutVal.innerText = sleepTimeoutEl.value;
+                });
+                sleepTimeoutEl.addEventListener('change', () => {
                     saveDeviceSettings();
                 });
             }
@@ -1718,11 +1797,16 @@
             const mainValDisp = document.getElementById('radarRangeVal');
             const smallSlider = document.getElementById('smallRadarRangeSlider');
             const smallValDisp = document.getElementById('smallRadarRangeVal');
+            const liveToggle = document.getElementById('liveRangeToggle');
+            const liveLabel = document.getElementById('liveRangeLabel');
 
             if (mainSlider) mainSlider.value = value;
             if (mainValDisp) mainValDisp.innerText = value;
             if (smallSlider) smallSlider.value = value;
             if (smallValDisp) smallValDisp.innerText = value;
+
+            if (liveToggle) liveToggle.checked = (value >= 20);
+            if (liveLabel) liveLabel.innerText = `${value} km`;
 
             if (rangeCircle) rangeCircle.setRadius(value * 1000);
             if (smallRangeCircle) smallRangeCircle.setRadius(value * 1000);
@@ -1731,7 +1815,7 @@
         let isUnlocked = false;
 
         // Tab Switching
-        function switchTab(tabId) {
+        async function switchTab(tabId) {
             if (tabId !== 'radarsim') {
                 if (simInterval) {
                     clearInterval(simInterval);
@@ -1769,12 +1853,12 @@
                 quickstartTab.style.display = 'block';
                 btnQuickstart.classList.add('active');
                 document.getElementById('connectionContainer').style.display = 'none';
-                disconnectDevice();
+                await disconnectDevice();
             } else if (tabId === 'flasher') {
                 flasherTab.style.display = 'block';
                 btnFlasher.classList.add('active');
                 document.getElementById('connectionContainer').style.display = 'none';
-                disconnectDevice();
+                await disconnectDevice();
             } else {
                 if (tabId === 'controller') btnController.classList.add('active');
                 else if (tabId === 'radarsim') btnRadarSim.classList.add('active');
@@ -2088,18 +2172,55 @@
         // --- Web Serial Connection Logic ---
         async function disconnectDevice() {
             if (port) {
-                try {
-                    await sendSerial('RESUME_SYNC');
-                } catch (e) { }
+                // Set keepReading to false so readLoop exits
                 keepReading = false;
+
+                // Send RESUME_SYNC before cancelling reader (non-blocking, don't await)
+                try {
+                    sendSerial('RESUME_SYNC').catch(() => {});
+                } catch (e) { }
+
+                // Cancel the reader to unblock reader.read()
                 if (reader) {
-                    try { await reader.cancel(); } catch (e) { }
+                    try { 
+                        await reader.cancel(); 
+                    } catch (e) { 
+                        console.warn("Reader cancel failed:", e);
+                    }
                 }
+
+                // Wait for the read loop to exit and release its lock
+                if (readPromise) {
+                    try { 
+                        await readPromise; 
+                    } catch (e) { 
+                        console.warn("Read promise resolution failed:", e);
+                    }
+                    readPromise = null;
+                }
+
+                // Close the port
                 try {
                     await port.close();
-                } catch (e) { }
+                } catch (e) { 
+                    console.warn("Port close failed:", e);
+                }
+
+                port = null;
+                reader = null;
+
+                // Force UI update to disconnected state
                 setDisconnectedUI();
             }
+        }
+
+        if ("serial" in navigator) {
+            navigator.serial.addEventListener('disconnect', (event) => {
+                if (port && event.target === port) {
+                    logConsole('Serial device physically disconnected.', 'warning');
+                    disconnectDevice();
+                }
+            });
         }
 
         btnConnect.addEventListener('click', async () => {
@@ -2115,7 +2236,7 @@
                     setConnectedUI();
 
                     // Start reading
-                    readLoop();
+                    readPromise = readLoop();
                 } catch (err) {
                     logConsole(`Failed to open serial port: ${err.message}`, 'error');
                     setDisconnectedUI();
@@ -2154,12 +2275,14 @@
             bootText.disabled = false;
             ledBrightness.disabled = false;
             ledColor.disabled = false;
+            document.getElementById('settingLedMode').disabled = false;
             buzzerVolume.disabled = false;
             beepBoot.disabled = false;
             beepConfig.disabled = false;
             beepTheme.disabled = false;
             beepFlight.disabled = false;
             btnSaveAudio.disabled = false;
+            document.getElementById('settingSleepTimeout').disabled = false;
 
             logConsole('Serial port connected. Requesting device status...', 'info');
 
@@ -2167,7 +2290,7 @@
             setTimeout(() => sendSerial('GET_STATUS'), 800);
 
             // Auto sync time once on connection
-            // Periodically syncing time is removed to keep local serial messages clean.
+            setTimeout(() => syncComputerTime(), 1200);
 
             // Update polling status badge
             document.getElementById('pollingStatus').className = 'idle';
@@ -2205,12 +2328,14 @@
             bootText.disabled = true;
             ledBrightness.disabled = true;
             ledColor.disabled = true;
+            document.getElementById('settingLedMode').disabled = true;
             buzzerVolume.disabled = true;
             beepBoot.disabled = true;
             beepConfig.disabled = true;
             beepTheme.disabled = true;
             beepFlight.disabled = true;
             btnSaveAudio.disabled = true;
+            document.getElementById('settingSleepTimeout').disabled = true;
 
             port = null;
             reader = null;
@@ -2233,9 +2358,8 @@
 
         // Loop to continuously read from the Serial line
         async function readLoop() {
-            const textDecoder = new TextDecoderStream();
-            const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
-            reader = textDecoder.readable.getReader();
+            const decoder = new TextDecoder();
+            reader = port.readable.getReader();
 
             let accumulatedString = "";
 
@@ -2246,7 +2370,8 @@
                         break;
                     }
                     if (value) {
-                        accumulatedString += value;
+                        const text = decoder.decode(value);
+                        accumulatedString += text;
                         if (accumulatedString.includes('\n')) {
                             const lines = accumulatedString.split('\n');
                             accumulatedString = lines.pop();
@@ -2353,8 +2478,9 @@
         btnSaveTheme.addEventListener('click', () => {
             const theme = parseInt(themeId.value);
             const boot = bootText.value.trim();
+            const ledModeVal = document.getElementById('settingLedMode') ? document.getElementById('settingLedMode').value : 'notif';
+            const mode = (ledModeVal === 'solid') ? 1 : ((ledModeVal === 'breath') ? 2 : 0);
             const bright = parseInt(ledBrightness.value);
-            const mode = 1;
 
             const hex = ledColor.value;
             const r = parseInt(hex.slice(1, 3), 16);
@@ -2687,10 +2813,18 @@
             if (sndEl && j.sound_enabled !== undefined) sndEl.checked = (j.sound_enabled === 1);
             const sndByEl = document.getElementById('settingSoundBy');
             if (sndByEl && j.sound_bypass !== undefined) sndByEl.checked = (j.sound_bypass === 1);
-            const ledEnEl = document.getElementById('settingLedEn');
-            if (ledEnEl && j.led_enabled !== undefined) ledEnEl.checked = (j.led_enabled === 1);
-            const ledByEl = document.getElementById('settingLedBy');
-            if (ledByEl && j.led_bypass !== undefined) ledByEl.checked = (j.led_bypass === 0);
+            const ledModeEl = document.getElementById('settingLedMode');
+            if (ledModeEl && j.led_enabled !== undefined && j.led_mode !== undefined) {
+                if (j.led_enabled === 0) {
+                    ledModeEl.value = 'off';
+                } else if (j.led_mode === 0) {
+                    ledModeEl.value = 'notif';
+                } else if (j.led_mode === 1) {
+                    ledModeEl.value = 'solid';
+                } else if (j.led_mode === 2) {
+                    ledModeEl.value = 'breath';
+                }
+            }
             const invertEl = document.getElementById('settingInvert');
             if (invertEl && j.display_invert !== undefined) invertEl.checked = (j.display_invert === 1);
             const clkEl = document.getElementById('settingClk12');
@@ -2798,26 +2932,19 @@
                 apiTsEl.innerText = j.api_last_call_ts;
             }
             if (apiLeftEl) {
-                const hasCreds = j.opensky_user && j.opensky_user.trim().length > 0;
-                const limit = hasCreds ? 4000 : 400;
-                let left;
                 if (j.opensky_limit_remaining !== undefined && j.opensky_limit_remaining >= 0) {
-                    left = j.opensky_limit_remaining;
-                } else if (j.api_daily_count !== undefined) {
-                    left = limit - j.api_daily_count;
-                }
-
-                if (left !== undefined) {
-                    if (left < 0) left = 0;
-                    apiLeftEl.innerText = `${left} / ${limit}`;
-
-                    if (left < limit * 0.1) {
+                    const left = j.opensky_limit_remaining;
+                    apiLeftEl.innerText = left;
+                    if (left < 100) {
                         apiLeftEl.style.color = "var(--danger)";
-                    } else if (left < limit * 0.3) {
+                    } else if (left < 300) {
                         apiLeftEl.style.color = "var(--primary)";
                     } else {
                         apiLeftEl.style.color = "#22c55e";
                     }
+                } else {
+                    apiLeftEl.innerText = "--";
+                    apiLeftEl.style.color = "var(--text-muted)";
                 }
             }
 
@@ -2825,16 +2952,31 @@
             if (j.radar_range_km !== undefined) {
                 const mainSlider = document.getElementById('radarRangeSlider');
                 const mainValDisp = document.getElementById('radarRangeVal');
-                const smallSlider = document.getElementById('smallRadarRangeSlider');
-                const smallValDisp = document.getElementById('smallRadarRangeVal');
+                const liveToggle = document.getElementById('liveRangeToggle');
+                const liveLabel = document.getElementById('liveRangeLabel');
 
                 if (mainSlider) mainSlider.value = j.radar_range_km;
                 if (mainValDisp) mainValDisp.innerText = j.radar_range_km;
-                if (smallSlider) smallSlider.value = j.radar_range_km;
-                if (smallValDisp) smallValDisp.innerText = j.radar_range_km;
+
+                if (liveToggle) {
+                    liveToggle.checked = (j.radar_range_km === 20);
+                }
+                if (liveLabel) {
+                    liveLabel.innerText = `${j.radar_range_km} km`;
+                }
 
                 if (rangeCircle) rangeCircle.setRadius(j.radar_range_km * 1000);
                 if (smallRangeCircle) smallRangeCircle.setRadius(j.radar_range_km * 1000);
+            }
+
+            // Sync screensaver timeout from device status
+            if (j.sleep_timeout_min !== undefined) {
+                const sleepEl = document.getElementById('settingSleepTimeout');
+                const sleepValEl = document.getElementById('sleepTimeoutVal');
+                if (sleepEl) {
+                    sleepEl.value = j.sleep_timeout_min;
+                    if (sleepValEl) sleepValEl.innerText = j.sleep_timeout_min;
+                }
             }
 
         }
@@ -2844,7 +2986,8 @@
         // Save Device Settings card
         function saveDeviceSettings() {
             const sound = document.getElementById('settingSound') ? (document.getElementById('settingSound').checked ? 1 : 0) : 1;
-            const ledEn = document.getElementById('settingLedEn') ? (document.getElementById('settingLedEn').checked ? 1 : 0) : 1;
+            const ledModeVal = document.getElementById('settingLedMode') ? document.getElementById('settingLedMode').value : 'notif';
+            const ledEn = (ledModeVal !== 'off') ? 1 : 0;
             const invert = document.getElementById('settingInvert') ? (document.getElementById('settingInvert').checked ? 1 : 0) : 0;
             const clk12 = document.getElementById('settingClk12') ? (document.getElementById('settingClk12').checked ? 1 : 0) : 0;
             const city2 = document.getElementById('settingCity2') ? parseInt(document.getElementById('settingCity2').value) : 0;
@@ -2853,11 +2996,14 @@
             const lcity = document.getElementById('settingLocalCity') ? document.getElementById('settingLocalCity').value.trim() : "Thrissur";
             const pw = document.getElementById('settingWebPassword') ? document.getElementById('settingWebPassword').value.trim() : "admin";
             const netOn = document.getElementById('networkOnline') ? parseInt(document.getElementById('networkOnline').value) : 1;
-            const radR = document.getElementById('radarRangeSlider') ? parseInt(document.getElementById('radarRangeSlider').value) : 50;
-            const ledBy = document.getElementById('settingLedBy') ? (document.getElementById('settingLedBy').checked ? 0 : 1) : 0;
+            const radSlider = document.getElementById('radarRangeSlider');
+            const radR = radSlider ? parseInt(radSlider.value) : 50;
+            const ledBy = (ledModeVal === 'notif') ? 0 : 1;
             const sndBy = document.getElementById('settingSoundBy') ? (document.getElementById('settingSoundBy').checked ? 1 : 0) : 0;
+            const sleepTimeoutEl = document.getElementById('settingSleepTimeout');
+            const sleepT = sleepTimeoutEl ? parseInt(sleepTimeoutEl.value) : 5;
 
-            sendSerial(`SETTINGS,${sound},${ledEn},${invert},${clk12},${city2},${chime},${tz},${lcity},${pw},${netOn},${radR},${ledBy},${sndBy}`);
+            sendSerial(`SETTINGS,${sound},${ledEn},${invert},${clk12},${city2},${chime},${tz},${lcity},${pw},${netOn},${radR},${ledBy},${sndBy},${sleepT}`);
         }
 
         // Save OpenSky credentials
@@ -2865,6 +3011,66 @@
             const user = (document.getElementById('oskyUser') || { value: '' }).value.trim();
             const pass = (document.getElementById('oskyPass') || { value: '' }).value.trim();
             sendSerial(`SET_OPENSKY,${user},${pass}`);
+        }
+
+        // Handle credentials JSON file upload and drop events
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropZone = document.getElementById('jsonDropZone');
+            const fileInput = document.getElementById('jsonFileInput');
+
+            if (dropZone && fileInput) {
+                dropZone.addEventListener('click', () => fileInput.click());
+
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('dragover');
+                });
+
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.classList.remove('dragover');
+                });
+
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                    if (e.dataTransfer.files.length > 0) {
+                        handleJsonFile(e.dataTransfer.files[0]);
+                    }
+                });
+
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        handleJsonFile(e.target.files[0]);
+                    }
+                });
+            }
+        });
+
+        function handleJsonFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    const clientId = data.clientId || data.client_id;
+                    const clientSecret = data.clientSecret || data.client_secret;
+                    if (clientId && clientSecret) {
+                        document.getElementById('oskyUser').value = clientId;
+                        document.getElementById('oskyPass').value = clientSecret;
+                        logConsole(`Loaded credentials from JSON: ${clientId}`, 'info');
+                        // Automatically save if connected
+                        if (!document.getElementById('btnSaveOpenSky').disabled) {
+                            saveOpenSkyCredentials();
+                        } else {
+                            alert("JSON loaded into fields. Connect your device to save to NVS.");
+                        }
+                    } else {
+                        alert("Invalid JSON format. Make sure it contains 'clientId' and 'clientSecret'.");
+                    }
+                } catch (err) {
+                    alert("Error parsing JSON file: " + err.message);
+                }
+            };
+            reader.readAsText(file);
         }
 
         // Factory Reset

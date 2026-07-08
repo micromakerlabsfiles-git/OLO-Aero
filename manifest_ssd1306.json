@@ -1,0 +1,14 @@
+{
+  "name": "OLO Aero (SSD1306)",
+  "version": "1.0.0",
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        { "path": "bootloader.bin", "offset": 0 },
+        { "path": "partitions.bin", "offset": 32768 },
+        { "path": "firmware_ssd1306.bin", "offset": 65536 }
+      ]
+    }
+  ]
+}

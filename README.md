@@ -1,21 +1,27 @@
 # OLO Aero — Firmware, Settings & Device Flow Guide
 
-This directory contains the pre-compiled ESP32-C3 Supermini firmware binaries (`bootloader.bin`, `partitions.bin`, `firmware.bin`) and serves as the complete manual for flashing, configuring, and using OLO Aero.
+This directory contains the pre-compiled ESP32-C3 Supermini firmware binaries (`bootloader.bin`, `partitions.bin`, `firmware_ssd1306.bin`, and `firmware_sh110x.bin`) and serves as the complete manual for flashing, configuring, and using OLO Aero.
 
 ---
 
 ## ⚡ Quickstart
 
+### 🚀 Launch the Web Controller
+
+The OLO Aero Web Controller & Flasher is fully hosted and accessible online. Open it in a compatible browser (**Google Chrome** or **Microsoft Edge**):
+
+[👉 Launch OLO Aero Web Controller](https://micromakerlabsfiles-git.github.io/OLO-Aero/)
+
+---
+
 ### 1. Flash the Firmware
 
 1. Open the **🔥 Firmware Flasher** tab in the Web Controller.
-2. Click **Install**.
-3. Plug the ESP32-C3 Supermini in via USB. Select the COM port from the browser dialog and click **Connect**.
+2. Select your **OLED Display Type** from the dropdown menu (SSD1306 for standard 0.96" screens vs SH110X for standard 1.3" screens).
+3. Click **Install**.
+4. Plug the ESP32-C3 Supermini in via USB. Select the COM port from the browser dialog and click **Connect**.
    > If the chip is not detected, hold the **BOOT** button on the board while plugging it in to enter bootloader mode.
-4. After flashing completes, the **Configure Device** popup appears automatically.
-5. Select your display driver:
-   - `SSD1306` — 0.96″ standard OLED
-   - `SH110X / SH1106` — 1.3″ OLED
+5. After flashing completes, the **Configure Device** popup appears automatically.
 6. (Optional) Enter your **WiFi SSID and Password** to enable live OpenSky flight tracking.
 7. Click **Save & Reboot**. The device will write settings to NVS flash and restart.
 
@@ -33,7 +39,23 @@ This directory contains the pre-compiled ESP32-C3 Supermini firmware binaries (`
 
 ---
 
-### 3. Running the Radar Demo (Offline Mode)
+### 3. OpenSky JSON Credentials Setup
+
+To track live flights over WiFi, OLO Aero requires an **OpenSky Network API** account with OAuth2 Client Credentials.
+
+1. **Obtain Credentials**: Register an account on the official OpenSky Network site at [opensky-network.org](https://opensky-network.org). Request application API access to get a **Client ID** and a **Client Secret**.
+2. **Create the JSON file**: Create a file named `credentials.json` on your computer and paste the following structure with your details:
+   ```json
+   {
+     "clientId": "your-client-id-here",
+     "clientSecret": "your-client-secret-here"
+   }
+   ```
+3. **Upload to Device**: In the Web Controller, simply drag-and-drop or browse to upload this `credentials.json` file. It will automatically parse and save the credentials into the device's secure NVS memory!
+
+---
+
+### 4. Running the Radar Demo (Offline Mode)
 
 1. In **WiFi & Display Setup**, set **Flight Tracking Mode** to `Offline Mode`.
 2. Navigate to the **📡 Radar Simulator** tab.
