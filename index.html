@@ -958,7 +958,7 @@
                         <option value="sh110x">SH110X OLED (1.3" standard)</option>
                     </select>
                 </div>
-                <esp-web-install-button manifest="firmware/manifest_ssd1306.json"></esp-web-install-button>
+                <esp-web-install-button manifest="manifest_ssd1306.json"></esp-web-install-button>
             </div>
 
             <div class="alert-olo"
@@ -1754,7 +1754,7 @@
             if (flasherDisp && installBtn) {
                 flasherDisp.addEventListener('change', () => {
                     const dispVal = flasherDisp.value;
-                    installBtn.setAttribute('manifest', `firmware/manifest_${dispVal}.json`);
+                    installBtn.setAttribute('manifest', `manifest_${dispVal}.json`);
                 });
             }
 
