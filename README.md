@@ -1,4 +1,4 @@
-# OLO Aero — Firmware, Settings & Device Flow Guide
+# OLO Aero — Firmware, Settings & Guide
 
 This directory contains the pre-compiled ESP32-C3 Supermini firmware binaries (`bootloader.bin`, `partitions.bin`, `firmware_ssd1306.bin`, and `firmware_sh110x.bin`) and serves as the complete manual for flashing, configuring, and using OLO Aero.
 
